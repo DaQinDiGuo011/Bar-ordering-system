@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+	  :fixed="true"
+	  	  bgColor="#ffffff"
+	  	  :title="title"
+	  	  left-arrow
+	  	  :placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="container address-form">
@@ -58,7 +60,7 @@ import {
   getAddressAddAndEdit
 } from '@/api/address'
 const main = useMainStore()
-const { isLogin,addresses } = storeToRefs(main)
+const { addresses } = storeToRefs(main)
 const title = ref('编辑地址')
 
 const form = ref({

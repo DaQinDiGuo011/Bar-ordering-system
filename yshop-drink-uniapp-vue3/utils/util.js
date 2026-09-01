@@ -160,3 +160,22 @@ export function parseQuery() {
   }
   
 
+/**
+ * @param {Number|String} timestamp 时间戳 10位/13位
+ * @returns {String} YYYY-MM-DD
+ */
+export function formatDateNumber(timestamp) {
+  if (!timestamp) return ''
+  let time = Number(timestamp)
+  // 10位秒 → 转毫秒
+  if (String(time).length === 10) {
+    time = time * 1000
+  }
+  const date = new Date(time)
+  if (isNaN(date.getTime())) return '' // 非法时间返回空
+
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}

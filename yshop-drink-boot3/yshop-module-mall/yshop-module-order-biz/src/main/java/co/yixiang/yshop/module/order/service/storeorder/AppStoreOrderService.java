@@ -1,14 +1,12 @@
 package co.yixiang.yshop.module.order.service.storeorder;
 
-import co.yixiang.yshop.module.order.controller.app.order.param.AppComputeOrderParam;
 import co.yixiang.yshop.module.order.controller.app.order.param.AppOrderParam;
 import co.yixiang.yshop.module.order.controller.app.order.param.AppPayParam;
-import co.yixiang.yshop.module.order.controller.app.order.vo.AppConfirmOrderVo;
 import co.yixiang.yshop.module.order.controller.app.order.vo.AppStoreOrderQueryVo;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
+import co.yixiang.yshop.module.order.dal.dataobject.storeorder.WineStoreDO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +50,7 @@ public interface AppStoreOrderService extends IService<StoreOrderDO> {
      * @param orderId 订单号
      * @param uid 用户id
      */
-    void yuePay(String orderId,Long uid);
+    void yuePay(String orderId,Long uid, List<WineStoreDO> storeDOList);
 
     /**
      * 支付成功后操作
@@ -85,6 +83,15 @@ public interface AppStoreOrderService extends IService<StoreOrderDO> {
      * @param uid uid
      */
     void takeOrder(String orderId,Long uid);
+
+    /**
+     * 出单后---制作中
+     * @param orderId
+     * @param uid
+     */
+    void orderConfirm(String orderId,Long uid);
+
+    void pendingReceipt(String orderId,Long uid);
 
     /**
      * 申请退款

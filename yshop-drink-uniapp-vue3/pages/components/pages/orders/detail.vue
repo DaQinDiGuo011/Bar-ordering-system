@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+		:fixed="true"
+		  bgColor="#ffffff"
+		  :title="title"
+		  left-arrow
+		  :placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="container order-detail-page">
@@ -15,68 +17,78 @@
 							<view class="d-flex flex-column w-60">
 								<view class="w-100 font-size-lg text-color-base text-truncate">{{ order.shop.name }}</view>
 							</view>
-							<view class="d-flex justify-content-end align-items-center w-40">
+							<!-- <view class="d-flex justify-content-end align-items-center w-40">
 								<view class="iconfont-yshop icon-mobile order-detail-page__shop-icon" @click="makePhoneCall(order.shop)"></view>
 								<view class="iconfont-yshop icon-location order-detail-page__shop-icon order-detail-page__shop-icon--last" @click="openLocation(order.shop)"></view>
-							</view>
+							</view> -->
 						</view>
 					</list-cell>
 					<!-- store info end -->
 					<list-cell :hover="false" padding="50rpx 30rpx">
 						<view class="w-100 d-flex flex-column">
-							<view class="d-flex align-items-center just-content-center">
-								<view class="order-detail-page__sort-num">{{ order.paid == 1 ? order.numberId : '--' }}</view>
+							<view class="cancel-title-cls" v-if="order.refundStatus == 2">
+								已退款
 							</view>
-							<!-- steps begin -->
-							<view class="d-flex just-content-center">
-								<view class="order-detail-steps d-flex flex-column w-80">
-									<view class="order-detail-steps__icons">
-										<view class="order-detail-steps__icon-item">
-											<view class="iconfont-yshop icon-lamp"></view>
-										</view>
-										<view class="order-detail-steps__icon-item">
-											<view class="iconfont-yshop icon-daojishi" v-if="{active: order.paid == 1 && order.status == 0}"></view>
-											<view class="iconfont-yshop icon-daojishi order-detail-steps__icon--inactive" v-else></view>
-										</view>
-										<view class="order-detail-steps__icon-item" v-if="order.orderType == 'takeout'">
-											<view class="iconfont-yshop icon-takeout" v-if="order.status == 1"></view>
-											<view class="iconfont-yshop icon-takeout order-detail-steps__icon--inactive" v-else></view>
-										</view>
-										<view class="order-detail-steps__icon-item">
-											<view class="iconfont-yshop icon-doorbell" v-if="order.status >= 2"></view>
-											<view class="iconfont-yshop icon-doorbell order-detail-steps__icon--inactive" v-else></view>
-										</view>
-									</view>
-									<view class="order-detail-steps__labels">
-										<view class="order-detail-steps__label order-detail-steps__label--active">
-											<view class="order-detail-steps__line order-detail-steps__line--transparent"></view>
-											<view class="order-detail-steps__text">已下单</view>
-											<view class="order-detail-steps__line"></view>
-										</view>
-										<view class="order-detail-steps__label" :class="{'order-detail-steps__label--active': order.paid == 1}">
-											<view class="order-detail-steps__line"></view>
-											<view class="order-detail-steps__text">制作中</view>
-											<view class="order-detail-steps__line"></view>
-										</view>
-										<view class="order-detail-steps__label" :class="{'order-detail-steps__label--active': order.status == 1}" v-if="order.orderType == 'takeout'">
-											<view class="order-detail-steps__line"></view>
-											<view class="order-detail-steps__text">配送中</view>
-											<view class="order-detail-steps__line order-detail-steps__line--transparent"></view>
-										</view>
-										<view class="order-detail-steps__label" :class="{'order-detail-steps__label--active': order.status >= 2}">
-											<view class="order-detail-steps__line"></view>
-											<view class="order-detail-steps__text">
-												{{ order.orderType == 'takeout' ? '已送达' : '请取餐' }}
+							<view class="cancel-title-cls" v-if="order.refundStatus == 1">
+								退款中...
+							</view>
+							<view  v-if="order.refundStatus == 0">
+								<view class="d-flex align-items-center just-content-center">
+									<view class="order-detail-page__sort-num">{{ order.paid == 1 ? order.numberId : '--' }}</view>
+								</view>
+								<!-- steps begin -->
+								
+								<view class="d-flex just-content-center">
+									<view class="order-detail-steps d-flex flex-column w-80">
+										<view class="order-detail-steps__icons">
+											<view class="order-detail-steps__icon-item">
+												<view class="iconfont-yshop icon-lamp"></view>
 											</view>
-											<view class="order-detail-steps__line order-detail-steps__line--transparent"></view>
+											<view class="order-detail-steps__icon-item">
+												<view class="iconfont-yshop icon-daojishi" v-if="{active: order.paid == 1 && order.status == 0}"></view>
+												<view class="iconfont-yshop icon-daojishi order-detail-steps__icon--inactive" v-else></view>
+											</view>
+											<view class="order-detail-steps__icon-item" v-if="order.orderType == 'takeout'">
+												<view class="iconfont-yshop icon-takeout" v-if="order.status == 1"></view>
+												<view class="iconfont-yshop icon-takeout order-detail-steps__icon--inactive" v-else></view>
+											</view>
+											<view class="order-detail-steps__icon-item">
+												<view class="iconfont-yshop icon-doorbell" v-if="order.status >= 2"></view>
+												<view class="iconfont-yshop icon-doorbell order-detail-steps__icon--inactive" v-else></view>
+											</view>
+										</view>
+										<view class="order-detail-steps__labels">
+											<view class="order-detail-steps__label order-detail-steps__label--active">
+												<view class="order-detail-steps__line order-detail-steps__line--transparent"></view>
+												<view class="order-detail-steps__text">已下单</view>
+												<view class="order-detail-steps__line"></view>
+											</view>
+											<view class="order-detail-steps__label" :class="{'order-detail-steps__label--active': order.status == 1}">
+												<view class="order-detail-steps__line"></view>
+												<view class="order-detail-steps__text">制作中</view>
+												<view class="order-detail-steps__line"></view>
+											</view>
+											<view class="order-detail-steps__label" :class="{'order-detail-steps__label--active': order.status == 2}">
+												<view class="order-detail-steps__line"></view>
+												<view class="order-detail-steps__text">送餐中</view>
+												<view class="order-detail-steps__line order-detail-steps__line--transparent"></view>
+											</view>
+											<view class="order-detail-steps__label" :class="{'order-detail-steps__label--active': order.status > 2}">
+												<view class="order-detail-steps__line"></view>
+												<view class="order-detail-steps__text">
+													已送达
+												</view>
+												<view class="order-detail-steps__line order-detail-steps__line--transparent"></view>
+											</view>
 										</view>
 									</view>
 								</view>
 							</view>
+							
 							<!-- steps end -->
-							<view v-if="order.status==0 && order.paid > 0" class="d-flex just-content-center align-items-center font-size-base text-color-assist mb-40">
+							<!-- <view v-if="order.status==0 && order.paid > 0" class="d-flex just-content-center align-items-center font-size-base text-color-assist mb-40">
 								您前面还有 <text class="text-color-primary mr-10 ml-10">{{order.preNum}}</text> 单待制作
-							</view>
+							</view> -->
 							<!-- goods begin -->
 							<view class="w-100 d-flex flex-column position-relative mt-30 order-detail-page__goods-preview">
 								<view class="w-100 d-flex align-items-center mb-40" v-for="(good, index) in order.products" :key="index">
@@ -153,7 +165,7 @@
 							</view>
 							<view class="order-detail-pay-cell">
 								<view>订单号</view>
-								<view class="font-weight-bold">{{ order.id }}</view>
+								<view class="font-weight-bold">{{ order.orderId }}</view>
 							</view>
 						</view>
 					</list-cell>
@@ -164,16 +176,31 @@
 					<view class="w-100 d-flex flex-column">
 						<view class="order-detail-pay-cell">
 							<view>享用方式</view>
-							<view class="font-weight-bold">{{order.orderType == 'takein' ? '自取' : '外卖'}}</view>
+							<view class="font-weight-bold">{{order.orderType == 'takein' ? '堂食' : '外卖'}}</view>
 						</view>
-						<view class="order-detail-pay-cell">
-							<view>取餐时间</view>
-							<view class="font-weight-bold">{{order.getTime ? formatDateTime(order.getTime) : '立即取餐'}}</view>
+						<view v-if="order.refundStatus == 2 || order.refundStatus == 1" style="margin-bottom: 40rpx;">
+							
+							<view class="order-detail-pay-cell">
+								<view>退款时间</view>
+								<view class="font-weight-bold">{{order.refundReasonTime ? formatDateTime(order.refundReasonTime) : '审核中'}}</view>
+							</view>
 						</view>
-						<view class="order-detail-pay-cell">
-							<view>制作完成时间</view>
-							<view class="font-weight-bold">{{ order.deliveryTime ? formatDateTime(order.deliveryTime) : '无' }}</view>
+						<view v-else style="margin-bottom: 40rpx;">
+							<!-- <view class="order-detail-pay-cell">
+								<view>取餐时间</view>
+								<view class="font-weight-bold">{{order.getTime ? formatDateTime(order.getTime) : '立即取餐'}}</view>
+							</view> -->
+							<view class="order-detail-pay-cell" v-if="order.refundStatus == 3">
+								<view>拒绝退单原因</view>
+								<view class="font-weight-bold">{{ order.refundReason }}</view>
+							</view>
+							<view class="order-detail-pay-cell">
+								<view>制作完成时间</view>
+								<view class="font-weight-bold">{{ order.deliveryTime ? formatDateTime(order.deliveryTime) : '制作中' }}</view>
+							</view>
 						</view>
+						
+						
 						<view class="order-detail-pay-cell">
 							<view>备注</view>
 							<view class="font-weight-bold">{{ order.remark ? order.remark : '无' }}</view>
@@ -182,8 +209,8 @@
 				</list-cell>
 				<!-- order other info end -->
 			</view>
-			<view class="fixed-bottom flex justify-end bg-white p-2" v-if="order.paid > 0 && order.refundStatus == 0">
-				<view class="mr-1"><uv-button type="success" v-if="order.status < 2" :plain="true" size="small" text="确认收到餐" @click="receive(order)"></uv-button></view>
+			<view class="fixed-bottom flex justify-end bg-white p-2" v-if="order.payType != 'JC' && order.paid > 0 && order.refundStatus == 0 && order.status == 0">
+				<!-- <view class="mr-1"><uv-button type="success" v-if="order.status < 2" :plain="true" size="small" text="确认收到餐" @click="receive(order)"></uv-button></view> -->
 				<view><uv-button type="warning" :plain="true" size="small" text="申请退款" @click="refund(order)"></uv-button></view>
 			</view>
 		</view>
@@ -289,7 +316,15 @@ page {
 	background-color: $bg-color;
 }
 /* #endif */
-
+.cancel-title-cls{
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
+	font-weight: bolder;
+	color: #ca0000;
+	font-size: 28px;
+	margin-bottom: 15px;
+}
 .order-detail-page {
 	padding: $order-detail-padding;
 	--order-detail-thumb-size: #{$order-detail-thumb-size};

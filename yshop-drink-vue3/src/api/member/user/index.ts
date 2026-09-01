@@ -67,3 +67,8 @@ export const deleteUser = async (id: number) => {
 export const exportUser = async (params) => {
   return await request.download({ url: `/member/user/export-excel`, params })
 }
+
+
+export const getIntegralRankPage  = async () => {
+  return await request.get({ url: `/member/user/points/rank` })
+}

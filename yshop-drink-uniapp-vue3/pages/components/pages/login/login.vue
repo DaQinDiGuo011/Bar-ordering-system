@@ -1,9 +1,11 @@
 <template>
 	<layout>
 		<uv-navbar
-		  :fixed="false"
-		  :title="title"
-		  left-arrow
+		  :fixed="true"
+		  	  bgColor="#ffffff"
+		  	  :title="title"
+		  	  left-arrow
+		  	  :placeholder="true"
 		  @leftClick="$onClickLeft"
 		/>
 		<view class="login-page">
@@ -234,9 +236,9 @@ const login = async () => {
 }
 
 const serv = (id,name) => {
-	uni.navigateTo({
-			url: '/pages/components/pages/mine/content?id=' + id + '&name=' + name
-	})
+	// uni.navigateTo({
+	// 		url: '/pages/components/pages/mine/content?id=' + id + '&name=' + name
+	// })
 }
 
 const onChange = () => {

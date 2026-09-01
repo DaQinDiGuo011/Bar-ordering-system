@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+	  :fixed="true"
+	  	  bgColor="#ffffff"
+	  	  :title="title"
+	  	  left-arrow
+	  	  :placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="container orders-page">
@@ -79,7 +81,7 @@ import {
   orderReceive
 } from '@/api/order'
 const main = useMainStore()
-const { isLogin } = storeToRefs(main)
+const { loginValueFlag } = storeToRefs(main)
 const title = ref('我的订单')
 
 const page = ref(1)
@@ -113,7 +115,7 @@ const goodsNum = computed(() => { //计算单个饮品添加到购物车的数�
 	}
 })
 onLoad(() => {
-	if(!isLogin.value) {
+	if(!loginValueFlag.value) {
 		uni.navigateTo({url: '/pages/components/pages/login/login'})
 	}
 	getOrders(false)

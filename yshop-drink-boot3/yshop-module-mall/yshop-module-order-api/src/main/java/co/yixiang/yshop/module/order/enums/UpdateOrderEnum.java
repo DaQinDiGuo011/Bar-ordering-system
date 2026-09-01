@@ -18,6 +18,8 @@ public enum UpdateOrderEnum {
 
 	UPDATE_ORDER("updateOrder","修改订单"),
 	ORDER_SEND("orderSend","订单发货"),
+	ORDER_CONFIRM("orderConfirm","订单确认"),
+
 	RMARK("remark","备注"),
 	SEND_INFO("sendInfo","配送信息");
 

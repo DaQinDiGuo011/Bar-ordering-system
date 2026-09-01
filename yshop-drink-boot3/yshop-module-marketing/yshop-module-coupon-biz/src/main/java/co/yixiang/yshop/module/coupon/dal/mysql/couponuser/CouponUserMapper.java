@@ -1,13 +1,14 @@
 package co.yixiang.yshop.module.coupon.dal.mysql.couponuser;
 
-import java.util.*;
-
 import co.yixiang.yshop.framework.common.pojo.PageResult;
-import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.framework.mybatis.core.mapper.BaseMapperX;
+import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
+import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserExportReqVO;
+import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserPageReqVO;
 import co.yixiang.yshop.module.coupon.dal.dataobject.couponuser.CouponUserDO;
 import org.apache.ibatis.annotations.Mapper;
-import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.*;
+
+import java.util.List;
 
 /**
  * 用户领的优惠券 Mapper
@@ -18,8 +19,12 @@ import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.*;
 public interface CouponUserMapper extends BaseMapperX<CouponUserDO> {
 
     default PageResult<CouponUserDO> selectPage(CouponUserPageReqVO reqVO) {
-        return selectPage(reqVO, new LambdaQueryWrapperX<CouponUserDO>()
-                .eqIfPresent(CouponUserDO::getShopId, reqVO.getShopId())
+        LambdaQueryWrapperX<CouponUserDO> wrapper = new LambdaQueryWrapperX();
+
+            if(reqVO.getDeleted() == -1){
+            wrapper.in(CouponUserDO::getDeleted, true, false);
+        }
+        wrapper.eqIfPresent(CouponUserDO::getShopId, reqVO.getShopId())
                 .likeIfPresent(CouponUserDO::getShopName, reqVO.getShopName())
                 .eqIfPresent(CouponUserDO::getTitle, reqVO.getTitle())
                 .eqIfPresent(CouponUserDO::getLeast, reqVO.getLeast())
@@ -32,7 +37,8 @@ public interface CouponUserMapper extends BaseMapperX<CouponUserDO> {
                 .eqIfPresent(CouponUserDO::getStatus, reqVO.getStatus())
                 .eqIfPresent(CouponUserDO::getCouponId, reqVO.getCouponId())
                 .eqIfPresent(CouponUserDO::getExchangeCode, reqVO.getExchangeCode())
-                .orderByDesc(CouponUserDO::getId));
+                .orderByDesc(CouponUserDO::getId);
+        return selectPage(reqVO, wrapper);
     }
 
     default List<CouponUserDO> selectList(CouponUserExportReqVO reqVO) {

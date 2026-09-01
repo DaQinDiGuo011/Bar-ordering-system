@@ -7,10 +7,10 @@
       label-width="120px"
       v-loading="formLoading"
     >
-      <el-form-item label="订单号" prop="orderType">
+      <el-form-item label="订单号" prop="orderId">
         <el-input v-model="formData.orderId" disabled class="input-width" />
       </el-form-item>
-      <el-form-item label="桌号" prop="orderType" v-if="formData.orderType == 'desk'">
+      <el-form-item label="桌号" prop="deskNumber">
         <el-input v-model="formData.deskNumber" disabled class="input-width" />
       </el-form-item>
       <el-form-item label="取餐号" prop="orderType" v-if="formData.orderType == 'takein'">
@@ -25,12 +25,47 @@
       <el-button @click="dialogVisible = false">取 消</el-button>
     </template>
   </Dialog>
+
+  <!-- 打印DOM：屏幕隐藏，仅打印生效 -->
+    <div class="print-wrap" ref="printRef">
+      <div class="ticket" style="margin-left: 15px;">
+        <div class="titleCls" style="text-align: center;">{{orderData.shopName}}</div>
+        <div class="line" style="border-bottom: 1px solid black;"></div>
+        <div class="row">订单号：{{ orderData.numberId }}</div>
+        <div class="row">桌号：{{ orderData.deskNumber }}</div>
+        <div class="row">下单时间：{{ formatToDateTime(orderData.createTime) }}</div>
+        <div class="row">客户：{{ orderData.userRespVO.nickname }}</div>
+        <div class="line" style="border-bottom: 1px solid black;"></div>
+
+        <!-- 商品列表 -->
+        <div class="goods-header">
+          <span style="display: inline-block; width: 80px; ">品名</span>
+          <span style="display: inline-block; width: 40px;">数量</span>
+          <span style="display: inline-block; width: 60px;">单价</span>
+          <span style="display: inline-block; width: 60px;">小计</span>
+        </div>
+        <div v-for="(item,idx) in orderData.storeOrderCartInfoDOList" :key="idx" class="goods-row">
+          <span style="display: inline-block; width: 80px; ">{{item.title}}</span> 
+          <span style="display: inline-block; width: 40px;">{{item.number}}</span>
+          <span style="display: inline-block; width: 60px;">{{item.price}}</span>
+          <span style="display: inline-block; width: 60px;">{{item.number * item.price}}</span>
+        </div>
+
+        <div class="line" style="border-bottom: 1px solid black;"></div>
+        <div class="total-row">合计：{{ orderData.totalPrice }} 元</div>
+        <div class="tip">感谢惠顾，欢迎再次光临</div>
+      </div>
+    </div>
 </template>
 <script setup lang="ts">
 import * as StoreOrderApi from '@/api/mall/order/storeOrder'
+import { formatToDateTime } from '@/utils/dateUtil'
+import { removeUnhandledOrder } from '@/hooks/web/handleOrderNotice'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
+
+const printRef = ref<HTMLElement | null>(null)
 
 const dialogVisible = ref(false) // 弹窗的是否展示
 const dialogTitle = ref('') // 弹窗的标题
@@ -94,7 +129,17 @@ const formRules = reactive({
 })
 const formRef = ref() // 表单 Ref
 
-
+const orderData = ref({
+  shopName: "",
+  numberId: "",
+  deskNumber: "",
+  createTime: "",
+  userRespVO: {
+    nickname: ""
+  },
+  storeOrderCartInfoDOList: [
+  ]
+})
  
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
@@ -107,6 +152,8 @@ const open = async (type: string, id?: number) => {
     formLoading.value = true
     try {
       formData.value = await StoreOrderApi.getStoreOrder(id)
+      console.log("-----formData---",formData.value)
+      orderData.value = formData.value
     } finally {
       formLoading.value = false
     }
@@ -125,8 +172,12 @@ const submitForm = async () => {
   formLoading.value = true
   try {
     const data = formData.value as unknown as StoreOrderApi.StoreOrderVO
-    data.updateType = 'orderSend'
+    data.updateType = 'orderConfirm'
+    data.status = 1
+    
     await StoreOrderApi.updateStoreOrder(data)
+    removeUnhandledOrder(data.orderId)
+    printOrder()
     message.success(t('common.updateSuccess'))
   
     dialogVisible.value = false
@@ -137,6 +188,53 @@ const submitForm = async () => {
   }
 }
 
+const printOrder = () => {
+  if (!printRef.value) return
+
+  const printDom = printRef.value.innerHTML
+  const printWin = window.open('', '_blank')
+  if (!printWin) {
+    uni.showToast({ title: "请允许浏览器弹出新窗口", icon: "none" })
+    return
+  }
+
+  printWin.document.write(`
+    <!DOCTYPE html>
+    <html lang="zh‑CN">
+    <head>
+    <meta charset="GBK">
+    <title>点单小票</title>
+    <style>
+    *{margin:0;padding:0;font‑family:SimHei,Microsoft YaHei;box‑sizing:border‑box;}
+    body{width:80mm;font‑size:13px;padding:2mm;}
+    .titleCls{text‑align:center;font‑weight:bold;font‑size:16px;margin‑bottom:4px;display: block;}
+    .line{border‑bottom:1px dashed #333;margin:4px 0;}
+    .row{margin:2px 0;}
+    .goods-header{display:flex;justify‑content:space‑between;margin:4px 0 2px;}
+    .goods-row{display:flex;justify‑content:space‑between;margin:2px 0;}
+    .total-row{text‑align:right;font‑weight:bold;margin‑top:4px;}
+    .tip{text‑align:center;margin‑top:8px;font‑size:12px;}
+    @media print{
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
+    }
+    </style>
+    </head>
+    <body>
+    ${printDom}
+    </body>
+    </html>
+  `)
+  printWin.document.close()
+
+  // 等待渲染完成再调用打印
+  setTimeout(() => {
+    printWin.print()
+    // printWin.close(); // 注释：部分浏览器关闭窗口会打断打印预览
+  }, 300)
+}
 
 
 /** 重置表单 */
@@ -201,5 +299,14 @@ const resetForm = () => {
 <style scoped>
 .input-width {
     width: 50%;
+  }
+
+  .print-wrap {
+    position: absolute;
+    left: -9999rpx;
+    top: -9999rpx;
+    width: 0;
+    height: 0;
+    overflow: hidden;
   }
 </style>

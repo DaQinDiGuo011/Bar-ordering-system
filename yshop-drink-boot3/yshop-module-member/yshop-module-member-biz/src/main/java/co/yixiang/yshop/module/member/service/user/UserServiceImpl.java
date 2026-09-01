@@ -2,24 +2,23 @@ package co.yixiang.yshop.module.member.service.user;
 
 import cn.hutool.core.util.NumberUtil;
 import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
+import co.yixiang.yshop.framework.common.pojo.PageResult;
+import co.yixiang.yshop.module.member.controller.admin.user.vo.*;
+import co.yixiang.yshop.module.member.convert.user.UserConvert;
+import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
+import co.yixiang.yshop.module.member.dal.mysql.user.MemberUserMapper;
 import co.yixiang.yshop.module.member.enums.BillDetailEnum;
 import co.yixiang.yshop.module.member.service.userbill.UserBillService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
-
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
-import java.util.*;
-import co.yixiang.yshop.module.member.controller.admin.user.vo.*;
-import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
-import co.yixiang.yshop.framework.common.pojo.PageResult;
-
-import co.yixiang.yshop.module.member.convert.user.UserConvert;
-import co.yixiang.yshop.module.member.dal.mysql.user.MemberUserMapper;
+import java.util.Collection;
+import java.util.List;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static co.yixiang.yshop.module.member.enums.ErrorCodeConstants.*;
+import static co.yixiang.yshop.module.member.enums.ErrorCodeConstants.USER_NOT_EXISTS;
 
 /**
  * 用户 Service 实现类
@@ -79,24 +78,24 @@ public class UserServiceImpl implements UserService {
                     BillDetailEnum.TYPE_7.getValue(),
                     Double.valueOf(updateReqVO.getMoney()), newMoney, mark);
         }
-        double newIntegral = 0d;
+        Integer newIntegral = 0;
         if(ShopCommonEnum.ADD_1.getValue().equals(updateReqVO.getItype())){
             mark = "系统增加了"+updateReqVO.getIntegral()+"积分";
-            newIntegral = NumberUtil.add(memberUserDO.getIntegral(),new BigDecimal(updateReqVO.getIntegral())).doubleValue();
+            newIntegral = memberUserDO.getIntegral() + Integer.valueOf(updateReqVO.getIntegral());
             userBillService.income(memberUserDO.getId(),"系统增加积分", BillDetailEnum.CATEGORY_2.getValue(),
                     BillDetailEnum.TYPE_6.getValue(),Double.valueOf(updateReqVO.getIntegral()),newIntegral, mark,"");
         }else{
             mark = "系统扣除了"+updateReqVO.getIntegral()+"积分";
-            newIntegral = NumberUtil.sub(memberUserDO.getIntegral(),new BigDecimal(updateReqVO.getIntegral())).doubleValue();
+            newIntegral = memberUserDO.getIntegral() - Integer.valueOf(updateReqVO.getIntegral());
             if(newIntegral < 0) {
-                newIntegral = 0d;
+                newIntegral = 0;
             }
             userBillService.expend(memberUserDO.getId(), "系统减少积分",
                     BillDetailEnum.CATEGORY_2.getValue(),
                     BillDetailEnum.TYPE_7.getValue(),
                     Double.valueOf(updateReqVO.getIntegral()), newIntegral, mark);
         }
-        memberUserDO.setIntegral(BigDecimal.valueOf(newIntegral));
+        memberUserDO.setIntegral(newIntegral);
         memberUserDO.setNowMoney(BigDecimal.valueOf(newMoney));
         userMapper.updateById(memberUserDO);
 

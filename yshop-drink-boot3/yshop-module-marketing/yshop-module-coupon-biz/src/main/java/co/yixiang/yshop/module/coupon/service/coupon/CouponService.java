@@ -1,10 +1,14 @@
 package co.yixiang.yshop.module.coupon.service.coupon;
 
-import java.util.*;
-import jakarta.validation.*;
-import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.*;
-import co.yixiang.yshop.module.coupon.dal.dataobject.coupon.CouponDO;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
+import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponCreateReqVO;
+import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponExportReqVO;
+import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponPageReqVO;
+import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponUpdateReqVO;
+import co.yixiang.yshop.module.coupon.dal.dataobject.coupon.CouponDO;
+import jakarta.validation.Valid;
+
+import java.util.List;
 
 /**
  * 优惠券 Service 接口
@@ -19,7 +23,7 @@ public interface CouponService {
      * @param createReqVO 创建信息
      * @return 编号
      */
-    Long create(@Valid CouponCreateReqVO createReqVO);
+    List<Long> create(@Valid CouponCreateReqVO createReqVO);
 
     /**
      * 更新优惠券
@@ -27,6 +31,8 @@ public interface CouponService {
      * @param updateReqVO 更新信息
      */
     void update(@Valid CouponUpdateReqVO updateReqVO);
+
+    void distributeUser(@Valid CouponUpdateReqVO updateReqVO);
 
     /**
      * 删除优惠券

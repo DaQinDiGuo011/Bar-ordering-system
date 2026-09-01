@@ -33,7 +33,7 @@ public interface StoreProductAttrValueMapper extends BaseMapperX<StoreProductAtt
      * @param unique
      * @return
      */
-    @Update("update yshop_store_product_attr_value set stock=stock+#{num}, sales=sales-#{num}" +
+    @Update("update yshop_store_product_attr_value set stock=stock+#{num}, sales=GREATEST(sales -#{num},0)" +
             " where product_id=#{productId} and `sku`=#{unique}")
     int incStockDecSales(@Param("num") Integer num,@Param("productId") Long productId,
                          @Param("unique")  String unique);

@@ -67,7 +67,7 @@ public class CouponDO extends BaseDO {
      */
     private Integer weigh;
     /**
-     * 可用类型:0=通用,1=自取,2=外卖
+     * 可用类型:0=通用,1=自取,2=外卖,3=一人一券
      */
     private Integer type;
     /**
@@ -94,6 +94,8 @@ public class CouponDO extends BaseDO {
      * 图片
      */
     private String image;
+
+    private Long userId;
     /**
      * 限领数量
      */

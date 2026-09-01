@@ -1,5 +1,5 @@
 <template>
-  <Dialog :title="dialogTitle" append-to-body="true" v-model="dialogVisible" width="70%">
+  <Dialog :title="dialogTitle" :append-to-body="true" v-model="dialogVisible" width="70%">
     <el-form
       ref="formRef"
       :model="formValidate"

@@ -1,14 +1,15 @@
 package co.yixiang.yshop.module.coupon.dal.mysql.coupon;
 
-import java.util.*;
-
 import co.yixiang.yshop.framework.common.pojo.PageResult;
-import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.framework.mybatis.core.mapper.BaseMapperX;
+import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils;
+import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponExportReqVO;
+import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponPageReqVO;
 import co.yixiang.yshop.module.coupon.dal.dataobject.coupon.CouponDO;
 import org.apache.ibatis.annotations.Mapper;
-import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.*;
+
+import java.util.List;
 
 /**
  * 优惠券 Mapper
@@ -28,6 +29,7 @@ public interface CouponMapper extends BaseMapperX<CouponDO> {
         return selectPage(reqVO, new LambdaQueryWrapperX<CouponDO>()
                 .eqIfPresent(CouponDO::getShopId, reqVO.getShopId())
                 .likeIfPresent(CouponDO::getShopName, reqVO.getShopName())
+                .eqIfPresent(CouponDO::getUserId, reqVO.getUserId())
                 .eqIfPresent(CouponDO::getTitle, reqVO.getTitle())
                 .orderByDesc(CouponDO::getId));
     }

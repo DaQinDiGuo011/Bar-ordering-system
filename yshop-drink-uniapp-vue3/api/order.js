@@ -61,3 +61,12 @@ export function payUnify(data) {
 export function getWechatConfig() {
   return api.get(`/member/wx-mp/create-jsapi-signature`, { url: location.href }, { login: false })
 }
+
+
+export function getPayInfo(data) {
+  return api.get(`/order/getPayInfo/${data}`, data, { login: true })
+}
+
+export function cancelPay(data) {
+  return api.post(`/order/cancel`, data, { login: true })
+}

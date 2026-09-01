@@ -16,7 +16,9 @@
       <el-form-item label="退款金额" prop="payPrice">
         <el-input v-model="formData.payPrice" placeholder="退款金额" />
       </el-form-item>
-     
+      <el-form-item label="权限密码" prop="pwd">
+          <el-input v-model="formData.pwd" placeholder="密码" type="password" show-password/>
+      </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="submitForm" type="primary" :disabled="formLoading">确 定</el-button>
@@ -26,6 +28,7 @@
 </template>
 <script setup lang="ts">
 import * as StoreOrderApi from '@/api/mall/order/storeOrder'
+import { removeUnhandledOrder } from '@/hooks/web/handleOrderNotice'
 
 const { t } = useI18n() // 国际化
 const message = useMessage() // 消息弹窗
@@ -48,6 +51,7 @@ const formData = ref({
   totalPrice: undefined,
   totalPostage: undefined,
   payPrice: undefined,
+  pwd: undefined,
   payPostage: undefined,
   deductionPrice: undefined,
   couponId: undefined,
@@ -88,7 +92,8 @@ const formData = ref({
 })
 const formRules = reactive({
   totalPrice: [{ required: true, message: '订单总价不能为空', trigger: 'blur' }],
-  payPrice: [{ required: true, message: '退款金额金额不能为空', trigger: 'blur' }]
+  payPrice: [{ required: true, message: '退款金额金额不能为空', trigger: 'blur' }],
+  pwd: [{ required: true, message: '密码不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
 
@@ -124,6 +129,7 @@ const submitForm = async () => {
     await StoreOrderApi.rufundStoreOrder(data)
     message.success(t('common.updateSuccess'))
     dialogVisible.value = false
+    removeUnhandledOrder(formData.value.orderId)
     // 发送操作成功的事件
     emit('success')
   } finally {

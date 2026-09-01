@@ -44,8 +44,11 @@ public class WeixinNoticeConsumer extends AbstractRedisStreamMessageListener<Wei
         }else if(WechatTempateEnum.SUBSCRIBE.getValue().equals(message.getType())){
             //小程序
             if(WechatTempateEnum.PAY_SUCCESS.getValue().equals(message.getTempkey())){
-                weiXinSubscribeService.paySuccessNotice(message.getNumberId().toString(),message.getProductName()
-                        ,message.getShopName(),message.getUid(),message.getId(),message.getOrderId());
+                 log.info("进行发送消息给前端：{}", message.getOrderId());
+                 weiXinSubscribeService.sendMsgToAdmin(message.getOrderId());
+//                weiXinSubscribeService.paySuccessNotice(message.getNumberId().toString(),message.getProductName()
+//                        ,message.getShopName(),message.getUid(),message.getId(),message.getOrderId());
+
             }else if(WechatTempateEnum.DELIVERY_SUCCESS.getValue().equals(message.getTempkey())){
                 weiXinSubscribeService.deliverySuccessNotice(message.getOrderId(),message.getDeliveryName(),
                         message.getDeliveryId(),message.getUid());

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+    <!-- 日志输出目录，服务器绝对路径 -->
+    <property name="LOG_PATH" value="/home/admin/application/log"/>
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 文件输出：每小时滚动，同时限制单文件大小 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/yshop-server.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- %d{yyyy‑MM‑dd‑HH} 按小时；%i小时内大文件分片；gz自动压缩历史日志 -->
+            <fileNamePattern>${LOG_PATH}/dewang‑%d{yyyy‑MM‑dd‑HH}.%i.log.gz</fileNamePattern>
+            <!-- 同一个小时内，单文件超过200M就分片 -->
+            <maxFileSize>200MB</maxFileSize>
+            <!-- 保留最近72小时日志（72个文件） -->
+            <maxHistory>72</maxHistory>
+            <!-- 日志总上限，超过自动删旧日志 -->
+            <totalSizeCap>8GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

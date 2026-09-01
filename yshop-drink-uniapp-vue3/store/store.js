@@ -13,12 +13,17 @@ export const useMainStore = defineStore('main', {
 	member: {
 
 	},
+	avatarUrlTemp: "",
+	nicknameTemp:"",
 	openid:"",
+	imagePrivateFlag: false,
+	loginValueFlag: false,
 	token:"",
 	lang: 'zh-cn',
 	cookieKey:'YSESSID=yshop-e4dk4o2utr3c0n95tp42p745ai',
 	// 默认地为你为北京地址
 	location: {},
+	myCouponList: [],
 	mycoupon: {}
   }),
   getters: {
@@ -33,8 +38,17 @@ export const useMainStore = defineStore('main', {
 	DEL_COUPON() {
 	    	this.mycoupon = {}
 	},
+	SET_AVATAR_URL_TEMP(url){
+		this.avatarUrlTemp = url
+	},
+	SET_NICKNAME_TEMP(name){
+		this.nicknameTemp = name
+	},
 	SET_COUPON(coupon) {
 	  	this.mycoupon = coupon
+	},
+	SET_COUPON_LIST(list){
+	  this.myCouponList = list
 	},
 	SET_ORDER_TYPE(type) {
 	  	this.orderType = type
@@ -71,6 +85,12 @@ export const useMainStore = defineStore('main', {
 	SET_OPENID(openid) {
 		this.openid = openid;
 	},
+	SET_IMAGE_PRIVATE_FLAG(flag){
+		this.imagePrivateFlag = flag;
+	},
+	SET_LOGIN_VALUE_FLAG(flag){
+		this.loginValueFlag = flag;
+	},
 	SET_TOKEN(token) {
 		this.token = token;
 		cookie.set('accessToken', token)
@@ -81,7 +101,6 @@ export const useMainStore = defineStore('main', {
       // return getUserInfo()
     },
     setSelectAddress(id) {
-      console.log('--> % setSelectAddress % id:\n', id)
       this.selectAddress = this.address.filter(item => item.id == id)[0]
     },
     init() {

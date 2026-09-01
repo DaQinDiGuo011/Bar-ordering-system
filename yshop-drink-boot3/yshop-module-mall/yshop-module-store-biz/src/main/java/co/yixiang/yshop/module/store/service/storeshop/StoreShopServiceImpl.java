@@ -1,24 +1,26 @@
 package co.yixiang.yshop.module.store.service.storeshop;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import co.yixiang.yshop.framework.common.exception.ErrorCode;
+import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils;
+import co.yixiang.yshop.module.store.controller.admin.storeshop.vo.StoreShopCreateReqVO;
+import co.yixiang.yshop.module.store.controller.admin.storeshop.vo.StoreShopExportReqVO;
+import co.yixiang.yshop.module.store.controller.admin.storeshop.vo.StoreShopPageReqVO;
+import co.yixiang.yshop.module.store.controller.admin.storeshop.vo.StoreShopUpdateReqVO;
+import co.yixiang.yshop.module.store.convert.storeshop.StoreShopConvert;
+import co.yixiang.yshop.module.store.dal.dataobject.storeshop.StoreShopDO;
+import co.yixiang.yshop.module.store.dal.mysql.storeshop.StoreShopMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.springframework.stereotype.Service;
 import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.*;
-import co.yixiang.yshop.module.store.controller.admin.storeshop.vo.*;
-import co.yixiang.yshop.module.store.dal.dataobject.storeshop.StoreShopDO;
-import co.yixiang.yshop.framework.common.pojo.PageResult;
-
-import co.yixiang.yshop.module.store.convert.storeshop.StoreShopConvert;
-import co.yixiang.yshop.module.store.dal.mysql.storeshop.StoreShopMapper;
+import java.util.Date;
+import java.util.List;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static co.yixiang.yshop.module.store.enums.ErrorCodeConstants.*;
+import static co.yixiang.yshop.module.store.enums.ErrorCodeConstants.SHOP_NOT_EXISTS;
 
 /**
  * 门店管理 Service 实现类
@@ -35,14 +37,17 @@ public class StoreShopServiceImpl implements StoreShopService {
     @Override
     public Long createShop(StoreShopCreateReqVO createReqVO) {
         //管理员只能绑定一个门店
-        createReqVO.getAdminId().forEach(val -> {
-           Long count = shopMapper.selectCount(new LambdaQueryWrapper<StoreShopDO>()
-                    .apply(
-                        "FIND_IN_SET ('" + val + "',admin_id)"));
-           if(count > 0){
-               throw exception(new ErrorCode(1000,"管理员ID："+val+"已经绑定过其他门店，不能再次绑定"));
-           }
-        });
+        if(createReqVO.getAdminId() != null){
+            createReqVO.getAdminId().forEach(val -> {
+                Long count = shopMapper.selectCount(new LambdaQueryWrapper<StoreShopDO>()
+                        .apply(
+                                "FIND_IN_SET ('" + val + "',admin_id)"));
+                if(count > 0){
+                    throw exception(new ErrorCode(1000,"管理员ID："+val+"已经绑定过其他门店，不能再次绑定"));
+                }
+            });
+        }
+
         // 插入
         StoreShopDO shop = StoreShopConvert.INSTANCE.convert(createReqVO);
         Integer status = doShopStatus(shop.getStartTime(),shop.getEndTime());

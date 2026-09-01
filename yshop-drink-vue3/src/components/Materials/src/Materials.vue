@@ -100,11 +100,11 @@
                     <el-upload
                       :action="uploadApi"
                       :headers="headers"
-                      :file-list="[]"
+                      :file-list="uploadFileList"
                       :on-progress="handleProgress"
                       :before-upload="beforeUpload"
                       :on-success="handleSuccess"
-                      :data="{ type: 1 }"
+                      :data="{ path: 'shop' }"
                       multiple
                     >
                       <el-button size="small" type="primary">批量上传</el-button>
@@ -137,7 +137,7 @@
                         <el-checkbox class="material-name" :label="item.url"> 选择 </el-checkbox>
                         <el-row>
                           <el-col :span="24" class="col-do">
-                            <el-button type="text" size="medium" @click="materialDel(item)"
+                            <el-button type="text" size="default" @click="materialDel(item)"
                               >删除</el-button
                             >
                           </el-col>
@@ -183,6 +183,7 @@ import {
 } from '@/api/tools/materialgroup'
 import { getPage, addObj, delObj } from '@/api/tools/material'
 import { getAccessToken } from '@/utils/auth'
+const uploadFileList = ref([])
 
 const props = defineProps({
   modelValue: {
@@ -260,7 +261,9 @@ const value = computed({
 
 // const store = useStore()
 
-const uploadApi = import.meta.env.VITE_UPLOAD_URL
+// const uploadApi = import.meta.env.VITE_UPLOAD_URL
+// const uploadApi = 'http://127.0.0.1:48081/admin-api/infra/file/upload'
+const uploadApi = 'https://theonebar-dwjg.com/admin-api/infra/file/upload'
 
 function moveMaterial(index, type) {
   if (type == 'up') {
@@ -312,16 +315,21 @@ function getMaterialgroupPage() {
     ascs: [], // 升序字段
     sort: 'create_time,desc' // 降序字段
   }).then((response) => {
+    console.log("response===",response)
+    if(!response){
+      
+      response = []
+    }
     materialgroupLoading.value = false
-    materialgroupList.value = response
-    materialgroupList.value.unshift({
-      id: '-1',
-      name: '全部分组'
-    })
-
-    tabClick({
-      index: 0
-    })
+      materialgroupList.value = response
+      materialgroupList.value.unshift({
+        id: '-1',
+        name: '全部分组'
+      })
+      tabClick({
+        index: 0
+      })
+    
   })
 }
 function materialgroupDelete(materialgroupObj) {
@@ -444,6 +452,7 @@ function handleProgress(event) {
   console.log(event)
 }
 function handleSuccess(response, file, fileList) {
+  console.log(response,"-response--file--",file,"===fileList",fileList)
   addObj({
     type: '1',
     groupId: groupId.value != '-1' ? groupId.value : null,
@@ -466,6 +475,7 @@ function beforeUpload(file) {
     file.type === 'image/gif' ||
     file.type === 'image/jpg'
   const isLt2M = file.size / 1024 / 1024 < 2
+  console.log(isPic,"=isPic======isLt2M=",isLt2M)
   if (!isPic) {
     this.$message.error('上传图片只能是 JPG、JPEG、PNG、GIF 格式!')
     return false
@@ -473,6 +483,7 @@ function beforeUpload(file) {
   if (!isLt2M) {
     this.$message.error('上传头像图片大小不能超过 2MB!')
   }
+  
   return isPic && isLt2M
 }
 

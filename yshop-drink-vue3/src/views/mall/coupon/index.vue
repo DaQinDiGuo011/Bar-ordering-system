@@ -52,8 +52,9 @@
       <el-table-column label="优惠券金额" align="center" prop="value"  width="150"/>
       <el-table-column label="可用类型" align="center" prop="type">
         <template #default="scope">
-          <span v-if="scope.row.type == 1">自取</span>
-          <span v-else-if="scope.row.type == 2">外卖</span>
+          <span v-if="scope.row.type == 2">自取</span>
+          <span v-else-if="scope.row.type == 3">外卖</span>
+          <span v-else-if="scope.row.type == 4">一人一券</span>
           <span v-else>通用</span>
          </template>
       </el-table-column>
@@ -109,6 +110,15 @@
           >
             领取记录
           </el-button>
+          <el-button
+            link
+            type="primary"
+            v-if="scope.row.type == 4 && !scope.row.userId"
+            @click="openForm('distributeUser', scope.row.id)"
+            v-hasPermi="['coupon::update']"
+          >
+            分配用户
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -124,6 +134,7 @@
   <!-- 表单弹窗：添加/修改 -->
   <Form ref="formRef" @success="getList" />
   <OrderRecord ref="formRef5" />
+  <DistributeUser ref="formRefDistribute" @success="getList" />
 </template>
 
 <script setup lang="ts" name="Coupon">
@@ -132,6 +143,7 @@ import download from '@/utils/download'
 import * as Api from '@/api/mall/coupon/'
 import Form from './Form.vue'
 import OrderRecord from './user/OrderRecord.vue'
+import DistributeUser from './user/DistributeUser.vue'
 const message = useMessage() // 消息弹窗
 const { t } = useI18n() // 国际化
 
@@ -190,9 +202,12 @@ const resetQuery = () => {
 /** 添加/修改操作 */
 const formRef = ref()
 const formRef5 = ref()
+const formRefDistribute = ref()
 const openForm = (type: string, id?: number) => {
   if (type == 'couponRecord') {
     formRef5.value.open(type, id)
+  }else if(type == 'distributeUser'){
+    formRefDistribute.value.open(type, id)
   }else{
     formRef.value.open(type, id)
   }

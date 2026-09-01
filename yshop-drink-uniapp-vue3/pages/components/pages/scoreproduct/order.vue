@@ -1,9 +1,11 @@
 <template>
 	<!-- #ifdef MP-WEIXIN -->
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+		:fixed="true"
+		bgColor="#ffffff"
+		:title="title"
+		left-arrow
+		:placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<!-- #endif -->
@@ -76,7 +78,7 @@ import {
 } from '@/api/score'
 const main = useMainStore()
 const { proxy } = getCurrentInstance();
-const { isLogin } = storeToRefs(main)
+const { loginValueFlag } = storeToRefs(main)
 const title = ref('我的积分订单')
 
 const type = ref(-1)
@@ -98,7 +100,7 @@ const tabList = ref([{
 		}]
 )
 onLoad(() => {
-	if (!isLogin.value) {
+	if (!loginValueFlag.value) {
 		uni.navigateTo({
 			url: '/pages/components/pages/login/login'
 		})

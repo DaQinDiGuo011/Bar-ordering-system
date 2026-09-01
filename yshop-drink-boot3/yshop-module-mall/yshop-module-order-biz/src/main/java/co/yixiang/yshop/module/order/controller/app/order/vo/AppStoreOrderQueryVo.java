@@ -3,7 +3,6 @@ package co.yixiang.yshop.module.order.controller.app.order.vo;
 
 import co.yixiang.yshop.module.order.dal.dataobject.storeordercartinfo.StoreOrderCartInfoDO;
 import co.yixiang.yshop.module.order.service.storeorder.dto.StatusDto;
-import co.yixiang.yshop.module.product.controller.app.cart.vo.AppStoreCartQueryVo;
 import co.yixiang.yshop.module.store.controller.app.storeshop.vo.AppStoreShopVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +11,6 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -73,7 +71,7 @@ public class AppStoreOrderQueryVo implements Serializable {
     private BigDecimal payPrice;
 
     @Schema(description = "实际支付积分", required = true)
-    private BigDecimal payIntegral;
+    private Integer payIntegral;
 
     @Schema(description = "支付邮费", required = true)
     private BigDecimal payPostage;
@@ -82,7 +80,7 @@ public class AppStoreOrderQueryVo implements Serializable {
     private BigDecimal deductionPrice;
 
     @Schema(description = "优惠券id", required = true)
-    private Integer couponId;
+    private String couponIdList;
 
     @Schema(description = "优惠券金额", required = true)
     private BigDecimal couponPrice;
@@ -140,13 +138,13 @@ public class AppStoreOrderQueryVo implements Serializable {
     private LocalDateTime deliveryTime;
 
     @Schema(description = "消费赚取积分", required = true)
-    private BigDecimal gainIntegral;
+    private Integer gainIntegral;
 
     @Schema(description = "使用积分", required = true)
-    private BigDecimal useIntegral;
+    private Integer useIntegral;
 
     @Schema(description = "给用户退了多少积分", required = true)
-    private BigDecimal backIntegral;
+    private Integer backIntegral;
 
     @Schema(description = "备注", required = true)
     private String mark;

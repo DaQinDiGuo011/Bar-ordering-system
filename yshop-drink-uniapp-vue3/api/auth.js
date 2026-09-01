@@ -35,3 +35,16 @@ export function wechatAuth(data) {
   return api.get('/member/auth/auth-wechat-login', data, { login: false })
 }
 
+/**
+ * register by phoneNo
+ * @param {Object} data
+ */
+export function loginByPhone(data){
+	return api.post('/member/auth/phoneWxLogin', data, { login: false })
+}
+/**
+ * @param {Object} data
+ */
+export function userLoginByUserCode(data) {
+  return api.post('/member/auth/loginByUserCode', data, { login: false })
+}

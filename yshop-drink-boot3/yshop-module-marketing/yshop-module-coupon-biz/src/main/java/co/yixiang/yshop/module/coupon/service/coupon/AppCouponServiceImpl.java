@@ -1,42 +1,27 @@
 package co.yixiang.yshop.module.coupon.service.coupon;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjectUtil;
 import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
-import co.yixiang.yshop.framework.common.pojo.PageResult;
-import co.yixiang.yshop.framework.common.util.object.ObjectUtils;
 import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
-import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponCreateReqVO;
-import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponExportReqVO;
-import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponPageReqVO;
-import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponUpdateReqVO;
 import co.yixiang.yshop.module.coupon.controller.app.coupon.vo.AppCouponVO;
-import co.yixiang.yshop.module.coupon.controller.app.coupon.vo.AppMyCouponVO;
 import co.yixiang.yshop.module.coupon.convert.coupon.CouponConvert;
-import co.yixiang.yshop.module.coupon.convert.couponuser.CouponUserConvert;
 import co.yixiang.yshop.module.coupon.dal.dataobject.coupon.CouponDO;
 import co.yixiang.yshop.module.coupon.dal.dataobject.couponuser.CouponUserDO;
 import co.yixiang.yshop.module.coupon.dal.mysql.coupon.CouponMapper;
-import co.yixiang.yshop.module.coupon.dal.mysql.couponuser.CouponUserMapper;
 import co.yixiang.yshop.module.coupon.service.couponuser.AppCouponUserService;
-import co.yixiang.yshop.module.store.dal.dataobject.storeshop.StoreShopDO;
-import co.yixiang.yshop.module.store.dal.mysql.storeshop.StoreShopMapper;
-import co.yixiang.yshop.module.system.api.logger.dto.OperateLogCreateReqDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static co.yixiang.yshop.module.coupon.enums.ErrorCodeConstants.*;
@@ -68,9 +53,15 @@ public class AppCouponServiceImpl extends ServiceImpl<CouponMapper, CouponDO> im
         LocalDateTime nowTime = LocalDateTime.now();
         Page<CouponDO> pageModel = new Page<>(page, pagesize);
         LambdaQueryWrapperX<CouponDO> wrapper = new LambdaQueryWrapperX<>();
+
         wrapper.eqIfPresent(CouponDO::getShopId, shopId)
+                .in(CouponDO::getType, 1,2,3)
+//                .and(w -> w.in(CouponDO::getType, 1, 2, 3)
+//                        .or(wr -> wr.eq(CouponDO::getType, 4).eq(CouponDO::getUserId, getLoginUserId()))
+//                )
                 .gt(CouponDO::getEndTime,nowTime)
                 .orderByDesc(CouponDO::getWeigh);
+
         IPage<CouponDO> pageList = this.baseMapper.selectPage(pageModel, wrapper);
         List<AppCouponVO> list = new ArrayList<>();
         for (CouponDO couponDO : pageList.getRecords()) {

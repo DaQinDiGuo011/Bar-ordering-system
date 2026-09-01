@@ -25,15 +25,15 @@
       <el-form-item label="用户备注" prop="mark">
         <el-input v-model="formData.mark" placeholder="请输入用户备注" />
       </el-form-item>
-      <el-form-item label="用户余额" prop="nowMoney">
+      <!-- <el-form-item label="用户余额" prop="nowMoney">
         <el-input v-model="formData.nowMoney" placeholder="请输入用户余额" />
-      </el-form-item>
-      <el-form-item label="佣金金额" prop="brokeragePrice">
+      </el-form-item> -->
+      <!-- <el-form-item label="佣金金额" prop="brokeragePrice">
         <el-input v-model="formData.brokeragePrice" placeholder="请输入佣金金额" />
-      </el-form-item>
-      <el-form-item label="用户积分" prop="integral">
+      </el-form-item> -->
+      <!-- <el-form-item label="用户积分" prop="integral">
         <el-input v-model="formData.integral" placeholder="请输入用户剩余积分" />
-      </el-form-item>
+      </el-form-item> -->
       <!-- <el-form-item label="等级" prop="level">
         <el-input v-model="formData.level" placeholder="请输入等级" />
       </el-form-item> -->

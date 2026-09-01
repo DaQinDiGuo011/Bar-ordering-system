@@ -23,9 +23,9 @@
           class="!w-240px"
         />
       </el-form-item>
-      <el-form-item label="手机号码" prop="phone">
+      <el-form-item label="手机号码" prop="mobile">
         <el-input
-          v-model="queryParams.phone"
+          v-model="queryParams.mobile"
           placeholder="请输入手机号码"
           clearable
           @keyup.enter="handleQuery"
@@ -60,7 +60,7 @@
       <el-table-column label="用户昵称" align="center" prop="nickname" />
       <el-table-column label="用户头像" align="center" prop="avatar">
         <template #default="scope">
-        <el-image style="width: 50px; height: 50px" :src="scope.row.avatar" />
+        <el-image style="width: 50px; height: 50px" :src="scope.row.avatar ?? defaultAvatar" />
         </template>
       </el-table-column>
       <el-table-column label="手机号码" align="center" prop="mobile" />
@@ -125,6 +125,8 @@ import * as UserApi from '@/api/member/user'
 import UserForm from './UserForm.vue'
 import UserDetail from './UserDetail.vue'
 import Yue from './yue.vue'
+import defaultAvatar from '@/static/images/user-default.png'
+
 const message = useMessage() // 消息弹窗
 // const { t } = useI18n() // 国际化
 
@@ -137,7 +139,7 @@ const queryParams = reactive({
   username: null,
   realName: null,
   nickname: null,
-  phone: null,
+  mobile: null,
   createTime: []
 })
 const queryFormRef = ref() // 搜索的表单

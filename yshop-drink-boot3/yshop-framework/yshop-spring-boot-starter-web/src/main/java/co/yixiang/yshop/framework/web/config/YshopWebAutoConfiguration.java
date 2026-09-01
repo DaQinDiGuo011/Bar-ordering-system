@@ -7,6 +7,8 @@ import co.yixiang.yshop.framework.web.core.filter.DemoFilter;
 import co.yixiang.yshop.framework.web.core.handler.GlobalExceptionHandler;
 import co.yixiang.yshop.framework.web.core.handler.GlobalResponseBodyHandler;
 import co.yixiang.yshop.framework.web.core.util.WebFrameworkUtils;
+import jakarta.annotation.Resource;
+import jakarta.servlet.Filter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -23,10 +25,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import jakarta.annotation.Resource;
-import jakarta.servlet.Filter;
 
 @AutoConfiguration
 @EnableConfigurationProperties(WebProperties.class)
@@ -44,6 +44,16 @@ public class YshopWebAutoConfiguration implements WebMvcConfigurer {
     public void configurePathMatch(PathMatchConfigurer configurer) {
         configurePathMatch(configurer, webProperties.getAdminApi());
         configurePathMatch(configurer, webProperties.getAppApi());
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // url访问路径 /file/xxx.jpg
+        registry.addResourceHandler("/file/**")
+                // =========这里改成你真实的文件存储目录！末尾必须带 / =========
+//                .addResourceLocations("file:D:/data/file/");
+
+                .addResourceLocations("file:/home/admin/application/file/user/");
     }
 
     /**

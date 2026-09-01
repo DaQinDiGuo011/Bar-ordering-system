@@ -5,6 +5,8 @@ import co.yixiang.yshop.framework.common.exception.ErrorCode;
 public interface ErrorCodeConstants {
     // ========== 订单1008007000==========
     ErrorCode STORE_ORDER_NOT_EXISTS = new ErrorCode(1008007000, "订单不存在");
+    ErrorCode STORE_DEPOSIT_NOT_EXISTS = new ErrorCode(1008008000, "寄存单不存在");
+
     ErrorCode STORE_ORDER_CART_INFO_NOT_EXISTS = new ErrorCode(1008007001, "订单购物详情不存在");
     ErrorCode STORE_ORDER_STATUS_NOT_EXISTS = new ErrorCode(1008007002, "订单操作记录不存在");
     ErrorCode STORE_AFTER_SALES_NOT_EXISTS = new ErrorCode(1008007003, "售后记录不存在");
@@ -31,11 +33,22 @@ public interface ErrorCodeConstants {
     ErrorCode ORDER_REFUNDING = new ErrorCode(1008007020, "正在申请退款中");
     ErrorCode ORDER_REFUNDED = new ErrorCode(1008007021, "订单已退款");
     ErrorCode ORDER_PRICE_ERROR = new ErrorCode(1008007022, "退款金额不正确");
+
+    ErrorCode PRICE_ISNULL_ERROR = new ErrorCode(1008007023, "退款金额不能为空");
+
     // ========== 订单电子面单记录 ==========
     ErrorCode STORE_ORDER_ELECTRONICS_NOT_EXISTS = new ErrorCode(1008010000, "订单电子面单记录不存在");
 
 
     ErrorCode STORE_ORDER_DESK_NOT = new ErrorCode(1008007023, "当前桌号不存在");
+
+    ErrorCode STORE_COUPON_NUMBER_LIMIT = new ErrorCode(1008007024, "优惠券使用数量超过限制");
+
+    ErrorCode STORE_COUPON_AMOUNT_LIMIT = new ErrorCode(1008007025, "优惠券使用额度超过限制");
+
+    ErrorCode PAY_INFO_NOT_EXIT = new ErrorCode(1008007026, "支付信息不存在");
+
+    ErrorCode PAY_USER_NOT_CURRENT = new ErrorCode(1008007026, "支付信息不属于当前用户");
 
 
 

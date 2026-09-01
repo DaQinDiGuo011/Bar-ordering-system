@@ -124,8 +124,8 @@ const loginData = reactive({
     tenantName: 'yshop',
     //username: 'yshop002',
     //password: '123456789',
-    username: 'admin',
-    password: 'admin123',
+    username: '',
+    password: '',
     captchaVerification: '',
     rememberMe: false
   }

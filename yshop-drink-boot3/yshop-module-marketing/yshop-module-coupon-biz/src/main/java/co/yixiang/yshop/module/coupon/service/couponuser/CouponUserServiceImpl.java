@@ -1,19 +1,22 @@
 package co.yixiang.yshop.module.coupon.service.couponuser;
 
-import org.springframework.stereotype.Service;
+import co.yixiang.yshop.framework.common.pojo.PageResult;
+import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserCreateReqVO;
+import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserExportReqVO;
+import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserPageReqVO;
+import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserUpdateReqVO;
+import co.yixiang.yshop.module.coupon.convert.couponuser.CouponUserConvert;
+import co.yixiang.yshop.module.coupon.dal.dataobject.couponuser.CouponUserDO;
+import co.yixiang.yshop.module.coupon.dal.mysql.couponuser.CouponUserMapper;
 import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.*;
-import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.*;
-import co.yixiang.yshop.module.coupon.dal.dataobject.couponuser.CouponUserDO;
-import co.yixiang.yshop.framework.common.pojo.PageResult;
-
-import co.yixiang.yshop.module.coupon.convert.couponuser.CouponUserConvert;
-import co.yixiang.yshop.module.coupon.dal.mysql.couponuser.CouponUserMapper;
+import java.util.List;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static co.yixiang.yshop.module.coupon.enums.ErrorCodeConstants.*;
+import static co.yixiang.yshop.module.coupon.enums.ErrorCodeConstants.COUPON_USER_NOT_EXISTS;
+import static co.yixiang.yshop.module.coupon.enums.ErrorCodeConstants.USER_USE_NOT_DEL;
 
 /**
  * 用户领的优惠券 Service 实现类
@@ -54,8 +57,12 @@ public class CouponUserServiceImpl implements CouponUserService {
     }
 
     private void validateUserExists(Integer id) {
-        if (userMapper.selectById(id) == null) {
+        CouponUserDO userDO = userMapper.selectById(id);
+        if (userDO == null) {
             throw exception(COUPON_USER_NOT_EXISTS);
+        }
+        if(userDO.getStatus() == 1){
+            throw exception(USER_USE_NOT_DEL);
         }
     }
 

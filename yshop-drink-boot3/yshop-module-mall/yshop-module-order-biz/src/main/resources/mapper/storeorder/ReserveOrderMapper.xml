@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.yixiang.yshop.module.order.dal.mysql.storeorder.ReserveOrderMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO reserve_order(user_id,table_id,table_name,reserve_date,reserve_time,name,phone,people_num,remark,status)
+        VALUES(#{userId},#{tableId},#{tableName},#{reserveDate},#{reserveTime},#{name},#{phone},#{peopleNum},#{remark},#{status})
+    </insert>
+    <select id="selectUserOrder" resultType="ReserveOrderDO">
+        select * from reserve_order where user_id=#{userId} order by create_time desc
+    </select>
+    <select id="selectById" resultType="ReserveOrderDO">
+        select * from reserve_order where id=#{id}
+    </select>
+    <update id="updateStatus">
+        update reserve_order set status=#{status} where id=#{id}
+    </update>
+</mapper>

@@ -3,7 +3,10 @@ package co.yixiang.yshop.module.order.controller.admin.storeorder.vo;
 import co.yixiang.yshop.module.member.controller.admin.user.vo.UserRespVO;
 import co.yixiang.yshop.module.order.dal.dataobject.storeordercartinfo.StoreOrderCartInfoDO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,6 +21,8 @@ public class StoreOrderRespVO extends StoreOrderBaseVO {
 
     @Schema(description = "添加时间", required = true)
     private LocalDateTime createTime;
+
+    private LocalDateTime updateTime;
 
     @Schema(description = "用户信息", required = true)
     private UserRespVO userRespVO;

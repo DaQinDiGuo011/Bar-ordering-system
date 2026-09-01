@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.yixiang.yshop.module.member.dal.mysql.user.UserWalletLogMapper">
+    <select id="selectLog" resultType="co.yixiang.yshop.module.member.dal.dataobject.user.UserWalletLogDO">
+        SELECT money,remark,created_at FROM user_wallet_log
+        WHERE user_id=#{userId} AND type=#{type} ORDER BY id DESC
+    </select>
+    <select id="sumPayMoney" resultType="java.util.Map">
+        SELECT SUM(money) sum FROM user_wallet_log WHERE user_id=#{userId} AND type=2
+    </select>
+    <insert id="insert">
+        INSERT INTO user_wallet_log(user_id,type,money,remark)
+        VALUES(#{userId},#{type},#{money},#{remark})
+    </insert>
+</mapper>

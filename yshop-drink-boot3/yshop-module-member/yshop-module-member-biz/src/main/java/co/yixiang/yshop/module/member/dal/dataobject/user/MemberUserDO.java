@@ -2,7 +2,6 @@ package co.yixiang.yshop.module.member.dal.dataobject.user;
 
 import co.yixiang.yshop.framework.common.enums.CommonStatusEnum;
 import co.yixiang.yshop.framework.tenant.core.db.TenantBaseDO;
-
 import co.yixiang.yshop.module.member.api.user.dto.WechatUserDto;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -123,7 +122,17 @@ public class MemberUserDO extends TenantBaseDO {
     /**
      * 用户剩余积分
      */
-    private BigDecimal integral;
+    private Integer integral;
+
+    /**
+     * 累计获得积分
+     */
+    private Integer totalIncome;
+    /**
+     * 累计消耗积分
+     */
+    private Integer totalOut;
+
     /**
      * 连续签到天数
      */

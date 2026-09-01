@@ -36,7 +36,7 @@ public interface MemberUserMapper extends BaseMapperX<MemberUserDO> {
                 .likeIfPresent(MemberUserDO::getUsername, reqVO.getUsername())
                 .likeIfPresent(MemberUserDO::getRealName, reqVO.getRealName())
                 .likeIfPresent(MemberUserDO::getNickname, reqVO.getNickname())
-                .likeIfPresent(MemberUserDO::getMobile, reqVO.getPhone())
+                .likeIfPresent(MemberUserDO::getMobile, reqVO.getMobile())
                 .betweenIfPresent(MemberUserDO::getCreateTime, reqVO.getCreateTime())
                 .orderByDesc(MemberUserDO::getId));
     }
@@ -67,4 +67,24 @@ public interface MemberUserMapper extends BaseMapperX<MemberUserDO> {
             " where id=#{uid}")
     int incMoney(@Param("uid") Long uid,@Param("price") BigDecimal price);
 
+    // 积分增减
+    @Update("UPDATE user_point SET point = point + #{num}, total_income = total_income + #{num}\n" +
+            "        WHERE user_id = #{userId}")
+    int addPoint(@Param("userId") Integer userId, @Param("num") Integer num);
+
+    @Update("UPDATE user_point\n" +
+            "        SET point = point - #{num}, total_out = total_out + #{num}\n" +
+            "        WHERE user_id = #{userId} AND point >= #{num}")
+    int subPoint(@Param("userId") Long userId, @Param("num") Integer num);
+
+    /**
+     * 查询积分前50名（用于uni‑app排行榜首页）
+     */
+    default List<MemberUserDO> selectTop50Rank() {
+        return selectList(new LambdaQueryWrapperX<MemberUserDO>()
+                .eq(MemberUserDO::getDeleted, 0)
+                .eq(MemberUserDO::getStatus, 0)
+                .orderByDesc(MemberUserDO::getIntegral)
+                .last("LIMIT 50"));
+    }
 }

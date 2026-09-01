@@ -1,9 +1,9 @@
 package co.yixiang.yshop.module.order.controller.app.order.param;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -25,6 +25,8 @@ public class AppPayParam implements Serializable {
     @Schema(description = "订单ID", required = true)
     private String uni;
 
+    @Schema(description = "1现点/2寄存", required = true)
+    private String deskType;
 //    @Schema(description = "服务商id 当不是余额支付必填1-阿里支付 3-微信支付 这里当编号与数据库id对应", required = true)
 //    private String detailsId;
 }

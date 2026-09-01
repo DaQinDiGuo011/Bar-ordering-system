@@ -8,6 +8,7 @@ import { usePageLoading } from '@/hooks/web/usePageLoading'
 import { useDictStoreWithOut } from '@/store/modules/dict'
 import { useUserStoreWithOut } from '@/store/modules/user'
 import { usePermissionStoreWithOut } from '@/store/modules/permission'
+import { initGlobalWebSocket, closeGlobalWebSocket } from '@/hooks/web/useGlobalWebSocket'
 
 const { start, done } = useNProgress()
 
@@ -61,6 +62,7 @@ router.beforeEach(async (to, from, next) => {
   start()
   loadStart()
   if (getAccessToken()) {
+    initGlobalWebSocket()
     if (to.path === '/login') {
       next({ path: '/' })
     } else {
@@ -91,6 +93,7 @@ router.beforeEach(async (to, from, next) => {
       }
     }
   } else {
+    closeGlobalWebSocket()
     if (whiteList.indexOf(to.path) !== -1) {
       next()
     } else {

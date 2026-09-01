@@ -29,7 +29,8 @@ public enum BillDetailEnum {
 
 
 	CATEGORY_1("now_money","金额"),
-	CATEGORY_2("integral","积分");
+	CATEGORY_2("integral","积分"),
+	CATEGORY_3("jc_receive","领取寄存");
 
 
 

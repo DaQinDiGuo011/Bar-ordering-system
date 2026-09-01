@@ -1,9 +1,11 @@
 <template>
 	<!-- #ifdef MP-WEIXIN -->
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+		:fixed="true"
+		bgColor="#ffffff"
+		:title="title"
+		left-arrow
+		:placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<!-- #endif -->
@@ -21,7 +23,7 @@
 		<view class="score-product-detail__intro" v-if="product.id">
 			<text class="score-product-detail__title">{{product.title}}</text>
 			<view class="score-product-detail__meta">
-				<text>积分： {{product.score}}</text>
+				<!-- <text>积分： {{product.score}}</text> -->
 				<text>销量: {{product.sales}}</text>
 				<text>库存: {{product.stock}}</text>
 			</view>

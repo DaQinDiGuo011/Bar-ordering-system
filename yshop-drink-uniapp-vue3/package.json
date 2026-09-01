@@ -13,6 +13,7 @@
     "flyio": "^0.6.14",
     "jweixin-module": "^1.6.0",
     "pinia": "^2.1.6",
+    "uview-plus": "^3.8.86",
     "weixin-js-sdk": "^1.6.3"
   }
 }

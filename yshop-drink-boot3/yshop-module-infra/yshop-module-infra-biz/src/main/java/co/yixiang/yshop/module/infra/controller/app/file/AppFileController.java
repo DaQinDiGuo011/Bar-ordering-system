@@ -6,14 +6,14 @@ import co.yixiang.yshop.module.infra.controller.app.file.vo.AppFileUploadReqVO;
 import co.yixiang.yshop.module.infra.service.file.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import jakarta.annotation.Resource;
 
 import static co.yixiang.yshop.framework.common.pojo.CommonResult.success;
 
@@ -29,8 +29,8 @@ public class AppFileController {
 
     @PostMapping("/upload")
     @Operation(summary = "上传文件")
-    public CommonResult<String> uploadFile(AppFileUploadReqVO uploadReqVO) throws Exception {
-        MultipartFile file = uploadReqVO.getFile();
+    public CommonResult<String> uploadFile(@RequestParam("file") MultipartFile file, AppFileUploadReqVO uploadReqVO) throws Exception {
+
         String path = uploadReqVO.getPath();
         return success(fileService.createFile(file.getOriginalFilename(), path, IoUtil.readBytes(file.getInputStream())));
     }

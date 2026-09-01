@@ -2,36 +2,37 @@ package co.yixiang.yshop.module.message.supply;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaSubscribeMessage;
-import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import co.yixiang.yshop.framework.common.constant.ShopConstants;
 import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
+import co.yixiang.yshop.framework.common.enums.UserTypeEnum;
 import co.yixiang.yshop.framework.common.exception.ErrorCode;
 import co.yixiang.yshop.framework.tenant.core.aop.TenantIgnore;
 import co.yixiang.yshop.framework.tenant.core.util.TenantUtils;
-import co.yixiang.yshop.module.member.api.user.dto.WechatUserDto;
+import co.yixiang.yshop.module.infra.api.websocket.WebSocketSenderApi;
 import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
 import co.yixiang.yshop.module.member.service.user.MemberUserService;
 import co.yixiang.yshop.module.message.dal.dataobject.wechattemplate.WechatTemplateDO;
 import co.yixiang.yshop.module.message.enums.WechatTempateEnum;
 import co.yixiang.yshop.module.message.service.wechattemplate.WechatTemplateService;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static co.yixiang.yshop.module.system.enums.ErrorCodeConstants.USER_USERNAME_EXISTS;
 
 ;
 
 /**
  * 小程序订阅消息通知
  */
+@Slf4j
 @Service
 public class WeiXinSubscribeService {
 
@@ -41,7 +42,8 @@ public class WeiXinSubscribeService {
     private WechatTemplateService wechatTemplateService;
     @Resource
     private WxMaService wxMaService;
-
+    @Resource
+    private WebSocketSenderApi webSocketSenderApi;
 
     /**
      * 充值成功通知
@@ -68,6 +70,20 @@ public class WeiXinSubscribeService {
         }
     }
 
+    /**
+     * 下单支付成功，发送消息通知给后台
+     * @param orderNo
+     */
+    public void sendMsgToAdmin(String orderNo){
+        log.info("消息发送订单号：{}",orderNo);
+        webSocketSenderApi.sendObject(
+                UserTypeEnum.ADMIN.getValue(),
+                "notice-push",
+                Map.of(
+                        "title", "新订单提醒",
+                        "content", orderNo,
+                        "important", false));
+    }
 
     /**
      * 支付成功通知

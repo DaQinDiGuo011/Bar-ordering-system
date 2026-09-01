@@ -64,7 +64,7 @@ public class AppCouponController {
                 .eq(CouponUserDO::getShopId,shopId)
                 .lt(CouponUserDO::getStartTime,nowTime)
                 .gt(CouponUserDO::getEndTime,nowTime)
-                .and(i->i.eq(CouponUserDO::getType,type).or().eq(CouponUserDO::getType,0))
+                .and(i->i.eq(CouponUserDO::getType,type).or().eq(CouponUserDO::getType,1))
                 .eq(CouponUserDO::getStatus, ShopCommonEnum.IS_STATUS_0));
 
         return success(count);
@@ -134,5 +134,19 @@ public class AppCouponController {
     }
 
 
+    /**
+     * 获取我的优惠券
+     */
+    @PreAuthenticated
+    @GetMapping("/useListByIdList")
+    @Parameters({
+            @Parameter(name = "couponIdList", description = "优惠券id集合",
+                    example = "1")
+    })
+    @Operation(summary = "根据优惠券id集合获取本用户已使用的优惠券列表")
+    public CommonResult<List<AppMyCouponVO>> useListByIdList(@RequestParam(value = "couponIdList",required = true)  List<Long> couponIdList){
+        Long uid = getLoginUserId();
+        return success(appCouponUserService.getListByIdList(couponIdList, 1));
+    }
 }
 

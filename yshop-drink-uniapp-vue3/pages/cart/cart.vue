@@ -52,7 +52,7 @@ import { useMainStore } from '@/store/store'
 import { storeToRefs } from 'pinia'
 import { onLoad,onShow} from '@dcloudio/uni-app'
 const main = useMainStore()
-const { orderType,address, store,location,isLogin } = storeToRefs(main)
+const { orderType,address, store,location,loginValueFlag } = storeToRefs(main)
 const title = ref('购物车')
 const cart = ref([])
 const uToast = ref()
@@ -119,7 +119,7 @@ const toPay = () => {
 		return;
 	}
 
-	if (!isLogin.value) {
+	if (!loginValueFlag.value) {
 		uni.navigateTo({
 			url: '/pages/components/pages/login/login'
 		})

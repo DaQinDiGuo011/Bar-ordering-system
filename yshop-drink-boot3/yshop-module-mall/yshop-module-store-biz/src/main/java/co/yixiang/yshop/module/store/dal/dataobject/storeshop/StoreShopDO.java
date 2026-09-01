@@ -1,16 +1,16 @@
 package co.yixiang.yshop.module.store.dal.dataobject.storeshop;
 
-import co.yixiang.yshop.framework.mybatis.core.type.StringListTypeHandler;
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
 import co.yixiang.yshop.framework.mybatis.core.dataobject.BaseDO;
+import co.yixiang.yshop.framework.mybatis.core.type.StringListTypeHandler;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 门店管理 DO
@@ -81,6 +81,18 @@ public class StoreShopDO extends BaseDO {
      * 公告
      */
     private String notice;
+
+    private String logoImage;
+
+    private String businessContent;
+
+    private String wifiInfo;
+
+    private String wifiPwd;
+
+    private String businessStartStr;
+
+    private String businessEndStr;
     /**
      * 是否营业:0=否,1=是
      */
@@ -103,5 +115,11 @@ public class StoreShopDO extends BaseDO {
      */
     private Date endTime;
 
+    private Integer couponUseNumLimit;
 
+    private BigDecimal couponUseAmountLimit;
+
+    private String clientAdImages;
+
+    private Integer orderUnpayCancelSecond;
 }

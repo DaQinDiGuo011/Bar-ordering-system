@@ -1,24 +1,25 @@
 package co.yixiang.yshop.module.order.dal.mysql.storeorder;
 
-import java.util.*;
-
 import cn.hutool.core.util.StrUtil;
 import co.yixiang.yshop.framework.common.enums.OrderInfoEnum;
+import co.yixiang.yshop.framework.common.enums.OrderTypeEnum;
 import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
-import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.framework.mybatis.core.mapper.BaseMapperX;
+import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils;
+import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.StoreOrderExportReqVO;
+import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.StoreOrderPageReqVO;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
 import co.yixiang.yshop.module.order.enums.AdminOrderStatusEnum;
 import co.yixiang.yshop.module.order.enums.OrderLogEnum;
-import co.yixiang.yshop.framework.common.enums.OrderTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import org.apache.ibatis.annotations.Mapper;
-import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * 订单 Mapper
@@ -107,6 +108,16 @@ public interface StoreOrderMapper extends BaseMapperX<StoreOrderDO> {
             wrapper.eq(StoreOrderDO::getPayType,reqVO.getPayStatus());
         }
 
+        return selectPage(reqVO, wrapper);
+    }
+
+    default PageResult<StoreOrderDO> selectPageByStatusList(StoreOrderPageReqVO reqVO, List<Integer> statusList) {
+        LambdaQueryWrapperX<StoreOrderDO> wrapper = new LambdaQueryWrapperX();
+
+        wrapper.eq(StoreOrderDO::getIsSystemDel, ShopCommonEnum.DELETE_0.getValue())
+                .in(StoreOrderDO::getStatus, statusList)
+                .eq(StoreOrderDO::getPaid, OrderInfoEnum.PAY_STATUS_1.getValue())
+                .in(StoreOrderDO::getRefundStatus, "0", "1","3");
         return selectPage(reqVO, wrapper);
     }
 

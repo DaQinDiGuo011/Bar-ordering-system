@@ -1,6 +1,5 @@
 package co.yixiang.yshop.module.coupon.service.couponuser;
 
-import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
 import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.module.coupon.controller.app.coupon.vo.AppMyCouponVO;
 import co.yixiang.yshop.module.coupon.convert.couponuser.CouponUserConvert;
@@ -10,12 +9,14 @@ import co.yixiang.yshop.module.coupon.enums.CouponStatusEnum;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 
 /**
  * 用户领的优惠券 Service 实现类
@@ -64,6 +65,16 @@ public class AppCouponUserServiceImpl extends ServiceImpl<CouponUserMapper, Coup
                 .eq(CouponUserDO::getUserId,uid);
         IPage<CouponUserDO> pageList = this.baseMapper.selectPage(pageModel, wrapper);
         return CouponUserConvert.INSTANCE.convertList03(pageList.getRecords());
+    }
+
+    @Override
+    public List<AppMyCouponVO> getListByIdList(List<Long> idList, Integer status) {
+        LambdaQueryWrapperX<CouponUserDO> wrapper = new LambdaQueryWrapperX<>();
+        wrapper.in(CouponUserDO::getId, idList);
+        wrapper.eq(CouponUserDO::getUserId, getLoginUserId());
+        wrapper.eq(CouponUserDO::getStatus, status);
+        List<CouponUserDO> couponUserDOList = this.baseMapper.selectList(wrapper);
+        return CouponUserConvert.INSTANCE.convertList03(couponUserDOList);
     }
 
 

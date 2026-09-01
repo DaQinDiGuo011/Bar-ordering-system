@@ -67,6 +67,7 @@ const setupAll = async () => {
   app.use(VueDOMPurifyHTML)
 
   app.mount('#app')
+  
 }
 
 setupAll()

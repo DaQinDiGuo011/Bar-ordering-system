@@ -2,6 +2,7 @@ package co.yixiang.yshop.module.infra.framework.file.core.client.local;
 
 import cn.hutool.core.io.FileUtil;
 import co.yixiang.yshop.module.infra.framework.file.core.client.AbstractFileClient;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 
@@ -29,8 +30,14 @@ public class LocalFileClient extends AbstractFileClient<LocalFileClientConfig> {
         // 执行写入
         String filePath = getFilePath(path);
         FileUtil.writeBytes(content, filePath);
-        // 拼接返回路径
-        return super.formatFileUrl(config.getDomain(), path);
+
+        if (StringUtils.isBlank(config.getBasePath())){
+            // 拼接返回路径
+            return super.formatFileUrl(config.getDomain(), path);
+        }else{
+            return config.getDomain() + "/file/" + path;
+        }
+
     }
 
     @Override

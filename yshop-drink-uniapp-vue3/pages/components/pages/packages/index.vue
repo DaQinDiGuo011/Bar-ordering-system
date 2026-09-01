@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
+	  :fixed="true"
+	  bgColor="#ffffff"
 	  :title="title"
 	  left-arrow
+	  :placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="container packages-page position-relative w-100 h-100 overflow-hidden">
@@ -19,7 +21,7 @@
 					<view class="packages-ticket">
 						<view
 							class="packages-ticket__body"
-							:class="{ 'packages-ticket__body--selected': item.id == coupon_id }"
+							:class="{ 'packages-ticket__body--selected': selectedCouponIds.includes(Number(item.id)) }"
 						>
 							<view class="packages-ticket__left">
 								<image
@@ -41,24 +43,28 @@
 							</view>
 							<view class="packages-ticket__right" @click.stop="" v-if="activeTabIndex == 0">
 								<view
-									v-if="item.id != coupon_id"
+									v-if="!selectedCouponIds.includes(Number(item.id))"
 									class="packages-ticket__btn packages-ticket__btn--use immediate-use"
 									:round="true"
-									@tap="useCouponWith(item)"
-								>立即使用</view>
+									@tap="toggleSelectCoupon(item)"
+								>选择</view>
 								<view
 									v-else
 									class="packages-ticket__btn packages-ticket__btn--use immediate-use"
 									:round="true"
-									@tap="cancelCoupon(item)"
-								>取消使用</view>
+									@tap="toggleSelectCoupon(item)"
+								>取消选择</view>
 							</view>
 						</view>
 					</view>
 				</view>
 			</view>
 		</scroll-view>
-
+		
+		<view class="packages-footer">
+			<uv-button type="warning" block @tap="confirmSelect">确定(已选{{selectedCouponIds.length}}张)</uv-button>
+		</view>
+				
 		<modal custom :show="detailModalVisible" @cancel="closeDetailModal" width="90%">
 			<view class="packages-modal">
 				<view class="d-flex font-size-extra-lg text-color-base just-content-center mb-20">{{ coupon.title }}</view>
@@ -68,11 +74,14 @@
 				<view class="d-flex font-size-sm text-color-base mb-20">适用范围：{{ typeInfo(coupon.type) }}</view>
 				<view class="d-flex font-size-sm text-color-base mb-20">适用店铺：{{ coupon.shopName }}</view>
 				<view class="d-flex align-items-center just-content-center" v-if="activeTabIndex == 0">
-					<button type="primary" @tap="useCoupon" class="packages-modal__btn">立即使用</button>
+					<button type="primary" @tap="toggleSelectCoupon(coupon)" class="packages-modal__btn">
+						{{ selectedCouponIds.includes(Number(coupon.id)) ? '取消选择' : '选择优惠券' }}
+					</button>
 				</view>
 			</view>
 		</modal>
 
+		
 		<!--轻提示-->
 		<uv-toast ref="uToast"></uv-toast>
 	</view>
@@ -92,7 +101,6 @@ import {
   couponMine
 } from '@/api/coupon'
 const main = useMainStore()
-const { isLogin } = storeToRefs(main)
 const title = ref('优惠券')
 const activeTabIndex = ref(0)
 const detailModalVisible = ref(false)
@@ -105,13 +113,23 @@ const coupon_id = ref(0)
 const shop_id = ref(0)
 const type = ref(0)
 const uToast = ref()
-
+// 改为数组存储多个选中id
+const selectedCouponIds = ref([])
+// 选中完整券对象数组
+const selectedCouponList = ref([])
 onLoad((options) => {
+	console.log("-options.selectedIds--",options.selectedIds)
 	if (options.amount) {
 		amount.value = options.amount;
 	}
-	if (options.coupon_id) {
-		coupon_id.value = options.coupon_id
+	if(options.selectedIds){
+		try{
+			selectedCouponIds.value = options.selectedIds.split(',').map(Number).filter(n=>!isNaN(n));
+			console.log("selectedCouponIds.value====---",selectedCouponIds.value)
+		}catch(e){
+			selectedCouponIds.value = []
+		}
+		console.log("final --- selectedCouponIds.value====---",selectedCouponIds.value)
 	}
 	if (options.shop_id) {
 		shop_id.value = options.shop_id;
@@ -130,20 +148,23 @@ onPullDownRefresh(() => {
 // 使用范围
 const typeInfo = (type) => {
 	if (type == 0) {
-		return '外卖和自取';
+		return '外卖和堂食';
 	}
 	if (type == 1) {
-		return '自取';
+		return '堂食';
 	}
 	if (type == 2) {
 		return '外卖';
 	}
 }
 const getCoupons = async() => {
-	let data = await couponMine({shop_id: shop_id.value, type: type.value, page:1, pagesize:10000});
+	let data = await couponMine({shop_id: shop_id.value, type: 0, page:1, pagesize:10000});
 	uni.stopPullDownRefresh();
 	if (data) {
 		coupons.value = data;
+		selectedCouponList.value = coupons.value.filter(cp=>{
+			return selectedCouponIds.value.includes(Number(cp.id))
+		})
 	}
 }
 const openDetailModal = (mycoupon, index) => {
@@ -152,48 +173,119 @@ const openDetailModal = (mycoupon, index) => {
 	detailModalVisible.value = true;
 }
 // 使用优惠券
-const useCouponWith = (mycoupon) => {
-	coupon.value = mycoupon;
-	useCoupon();
-}
-// 取消优惠券
-const cancelCoupon = () => {
-	coupon.value = {}
-	coupon_id.value = 0
-	prePage().coupon = {}
-}
+// const useCouponWith = (mycoupon) => {
+// 	coupon.value = mycoupon;
+// 	useCoupon();
+// }
+// // 取消优惠券
+// const cancelCoupon = () => {
+// 	coupon.value = {}
+// 	coupon_id.value = 0
+// 	// prePage().coupon = {}
+// 	main.SET_COUPON(coupon)
+// }
 const closeDetailModal = () => {
 	detailModalVisible.value = false;
 	coupon.value = {};
 }
 // 使用优惠及
-
-const useCoupon = () => {
-	if (buttonLock.value == true) {
-		return;
+// 切换选中/取消 多张优惠券
+const toggleSelectCoupon = (mycoupon) => {
+	console.log(selectedCouponIds.value,"选中-mycoupon----",mycoupon)
+	const targetId = Number(mycoupon.id)
+	// const idx = selectedCouponIds.value.indexOf(mycoupon.id)
+	const found = selectedCouponIds.value.find(x=> Number(x) === targetId)
+	console.log('found===',found)
+	if(found){
+		// 取消选中
+		// selectedCouponIds.value.splice(idx,1)
+		// const listIdx = selectedCouponList.value.findIndex(i=>i.id === mycoupon.id)
+		// if(listIdx>-1) selectedCouponList.value.splice(listIdx,1)
+		selectedCouponIds.value = selectedCouponIds.value.filter(x=>Number(x)!==targetId)
+		selectedCouponList.value = selectedCouponList.value.filter(i=>Number(i.id)!==targetId)
+	}else{
+		// 选中
+		// selectedCouponIds.value.push(mycoupon.id)
+		// selectedCouponList.value.push({...mycoupon})
+		selectedCouponIds.value.push(targetId)
+		selectedCouponList.value.push({...mycoupon})
+	}
+}
+// 确认选择，返回上一页，把多张券存store回传
+const confirmSelect = ()=>{
+	if(buttonLock.value) return
+	if(selectedCouponList.value.length === 0){
+		main.SET_COUPON_LIST([])
+		uni.navigateBack({})
+		setTimeout(()=>{
+			buttonLock.value = false
+		},300)
+		return
+	}
+	let shop = main.store
+	console.log("shop---", shop)
+	// 校验每张选中券是否满足满减条件
+	let invalidCoupons = selectedCouponList.value.filter(item=>{
+		return parseFloat(item.least) > parseFloat(amount.value)
+	})
+	if(invalidCoupons.length>0){
+		uToast.value.show({
+			message:`【${invalidCoupons[0].title}】不满足满减金额`,
+			type:'error'
+		})
+		return
+	}
+	if(shop.couponUseNumLimit > 0 && selectedCouponList.value.length > shop.couponUseNumLimit){
+		uToast.value.show({
+			message:`超过最大使用数量【${shop.couponUseNumLimit}张】`,
+			type:'error'
+		})
+		return
+	}
+	let sum = 0
+	selectedCouponList.value.map(val => sum += parseFloat(val.value));
+	
+	if(shop.couponUseAmountLimit > 0 && sum > shop.couponUseAmountLimit){
+		uToast.value.show({
+			message:`超过最大使用读【限额${shop.couponUseAmountLimit}元】`,
+			type:'error'
+		})
+		return
 	}
 	buttonLock.value = true
-	//console.log('coupon:',coupon.value);
-	if (parseFloat(coupon.value.least) > parseFloat(amount.value)) {
-		//console.log('pages3:');
-		uToast.value.show({
-			message: '订单金额满'+coupon.value.least+'才能使用',
-			type: 'error'
-		});
+	// 存入pinia store，这里需要你修改store支持数组
+	main.SET_COUPON_LIST(selectedCouponList.value)
+	uni.navigateBack({})
+	setTimeout(()=>{
 		buttonLock.value = false
-	} else {
-	    main.SET_COUPON(coupon)
-		console.log('main.myconpon:',main.mycoupon)
-		//prePage().coupon = coupon.value;
-		//prePage().coupons = 1; // 哨兵
-		
-		uni.navigateBack({
-			
-		})
-		
-	}
-	
+	},300)
 }
+// const useCoupon = () => {
+// 	if (buttonLock.value == true) {
+// 		return;
+// 	}
+// 	buttonLock.value = true
+// 	//console.log('coupon:',coupon.value);
+// 	if (parseFloat(coupon.value.least) > parseFloat(amount.value)) {
+// 		//console.log('pages3:');
+// 		uToast.value.show({
+// 			message: '订单金额满'+coupon.value.least+'才能使用',
+// 			type: 'error'
+// 		});
+// 		buttonLock.value = false
+// 	} else {
+// 	    main.SET_COUPON(coupon)
+// 		console.log('main.myconpon:',main.mycoupon)
+// 		//prePage().coupon = coupon.value;
+// 		//prePage().coupons = 1; // 哨兵
+		
+// 		uni.navigateBack({
+			
+// 		})
+		
+// 	}
+	
+// }
 
 
 
@@ -224,6 +316,7 @@ $packages-btn-line-height: 40rpx;
 $packages-btn-margin-left: 20rpx;
 $packages-selected-border-width: 1rpx;
 $packages-modal-btn-width: 95%;
+$footer-height: 120rpx;
 
 /* #ifdef H5 */
 page {
@@ -241,10 +334,10 @@ page {
 
 .packages-list {
 	margin-top: $packages-list-margin-top;
-	height: calc(100vh - var(--packages-list-offset-nav));
+	height: calc(100vh - var(--packages-list-offset-nav) - #{$footer-height});
 
 	/* #ifdef H5 */
-	height: calc(100vh - var(--packages-list-offset-nav) - 44px);
+	height: calc(100vh - var(--packages-list-offset-nav) - 44px - #{$footer-height});
 	/* #endif */
 
 	&__wrapper {
@@ -253,7 +346,12 @@ page {
 		padding: 0 $packages-list-padding-x;
 	}
 }
-
+.packages-footer{
+	padding:20rpx 30rpx;
+	height:$footer-height;
+	background:#fff;
+	border-top:1rpx solid $border-color-light;
+}
 .packages-item {
 	display: flex;
 	flex-direction: column;

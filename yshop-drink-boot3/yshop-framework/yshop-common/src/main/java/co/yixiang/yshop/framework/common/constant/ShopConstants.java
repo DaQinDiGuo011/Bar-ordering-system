@@ -15,7 +15,7 @@ public interface ShopConstants {
 	/**
 	 * 订单自动取消时间（分钟）
 	 */
-	long ORDER_OUTTIME_UNPAY = 30;
+	long ORDER_OUTTIME_UNPAY = 10;
 	/**
 	 * 订单自动收货时间（分钟）
 	 */

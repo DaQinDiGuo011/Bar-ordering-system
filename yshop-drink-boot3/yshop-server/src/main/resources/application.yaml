@@ -4,7 +4,10 @@ spring:
 
   profiles:
     active: local
-
+  #本地要配置
+  web:
+    resources:
+      static‑locations: file:D:/data/file/
   main:
     allow-circular-references: true # 允许循环依赖，因为项目是三层架构，无法避免这个情况。
 
@@ -35,6 +38,8 @@ spring:
       time-to-live: 1h # 设置过期时间为 1 小时
 
 --- #################### 接口文档配置 ####################
+logging:
+  config: classpath:logback-spring.xml
 
 springdoc:
   api-docs:
@@ -155,10 +160,11 @@ yshop:
   security:
     permit-all_urls:
       - /admin-api/mp/open/** # 微信公众号开放平台，微信回调接口，不需要登录
+      - /infra/ws # WebSocket 握手，通过 token 识别用户
   websocket:
     enable: true # websocket的开关
     path: /infra/ws # 路径
-    sender-type: local # 消息发送的类型，可选值为 local、redis、rocketmq、kafka、rabbitmq
+    sender-type: redis # 消息发送的类型，可选值为 local、redis、rocketmq、kafka、rabbitmq
     sender-rocketmq:
       topic: ${spring.application.name}-websocket # 消息发送的 RocketMQ Topic
       consumer-group: ${spring.application.name}-websocket-consumer # 消息发送的 RocketMQ Consumer Group
@@ -196,6 +202,7 @@ yshop:
       - /admin-api/mp/open/** # 微信公众号开放平台，微信回调接口，无法携带租户编号
       - /admin-api/file/qrcode/** # 二维码不需要
       - /app-api/order/notify/* # 支付回调通知，不携带租户编号
+      - /infra/ws #消息通知
     ignore-tables:
       - system_tenant
       - system_tenant_package
@@ -256,3 +263,9 @@ debug: false
 jeecg:
   jmreport:
     saas-mode: tenant
+
+
+wx:
+  miniapp:
+    app-id: wx731529eecec1ddf7 #你的小程序appid
+    app-secret: ae781b2ecc70dda44bab117f6408b91d #你的小程序appsecret

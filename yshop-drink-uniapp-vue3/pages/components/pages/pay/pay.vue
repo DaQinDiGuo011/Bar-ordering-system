@@ -1,14 +1,16 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
+	  :fixed="true"
+	  bgColor="#ffffff"
 	  :title="title"
 	  left-arrow
-	  @leftClick="$onClickLeft"
+	  :placeholder="true"
+	  @leftClick="onClickLeft"
 	/>
 	<view class="pay-page container position-relative">
 		<view class="pay-page__content">
 			<view class="pay-page__section">
-				<template v-if="store.distance > 0">
+				<!-- <template v-if="store.distance > 0">
 					<list-cell class="pay-page__cell pay-page__cell--location">
 						<view class="flex-fill d-flex justify-content-between align-items-center">
 							<view class="store-name flex-fill">{{ orderType == 'takeout' ? '外卖配送' : '点餐自取' }}</view>
@@ -16,7 +18,7 @@
 							</uv-switch>
 						</view>
 					</list-cell>
-				</template>
+				</template> -->
 
 				<template v-if="orderType == 'takeout'">
 					<list-cell @click="chooseAddress">
@@ -40,7 +42,7 @@
 				</template>
 			</view>
 
-			<view class="pay-page__section">
+			<!-- <view class="pay-page__section">
 				<template>
 					<list-cell class="pay-page__cell pay-page__cell--location" @click="goToShop">
 						<view class="flex-fill d-flex justify-content-between align-items-center">
@@ -86,6 +88,23 @@
 						</view>
 					</list-cell>
 				</template>
+			</view> -->
+			<!-- 桌号外层渐变背景容器 -->
+			<view class="desk-header-bg">
+				<view class="deskNumbCls">
+					<view class="desk-icon">🪑</view>
+					<text class="desk-text">桌号{{ deskNumber }}</text>
+				</view>
+			</view>
+			
+			<!-- 现点 / 寄存 选项 -->
+			<view class="desk-type-wrap">
+				<view class="desk-type-item" :class="{active: deskType === '1'}" @click="changeDeskType('1')">
+					<text>现点</text>
+				</view>
+				<view class="desk-type-item" :class="{active: deskType === '2'}" @click="changeDeskType('2')">
+					<text>寄存</text>
+				</view>
 			</view>
 			<!-- 购物车列表 begin -->
 			<view class="pay-page__section pay-page__section--cart">
@@ -112,21 +131,29 @@
 					</list-cell>
 				</view>
 				<list-cell arrow @click="goToPackages">
-					<view class="flex-fill d-flex justify-content-between align-items-center">
-						<view class="text-color-base">优惠券</view>
-						<view v-if="coupons == 0" class="text-color-base">暂无可用</view>
-						<view v-else-if="coupon.title" class="text-color-danger">
-							{{ coupon.title }}(满{{ coupon.least }}减{{ coupon.value }})
+					<view class="flex-fill">
+						
+					
+						<view class="flex-fill d-flex justify-content-between align-items-center">
+							<view class="text-color-base">优惠券</view>
+							<view v-if="coupons == 0 && couponList.length ==0" class="text-color-base">暂无可用</view>
+							
+							<view v-else-if="couponList.length > 0"></view>
+							<view v-else class="text-color-primary">可用优惠券{{ coupons }}张</view>
 						</view>
-						<view v-else class="text-color-primary">可用优惠券{{ coupons }}张</view>
+						<view v-if="couponList.length>0" class="mt-10">
+							<view v-for="(info,i) in couponList" :key="i" class="text-color-danger">
+								{{ info.title }}(满{{ info.least }}减{{ info.value }})
+							</view>
+						</view>
 					</view>
 				</list-cell>
 				<list-cell last>
 					<view class="flex-fill d-flex justify-content-end align-items-center">
 						<view>
-							总计￥{{ total }}
+							总计￥{{ total.toFixed(2) }}
 							<text v-if="orderType == 'takeout'">,配送费￥{{ store.deliveryPrice }}</text>
-							<text v-if="coupon.value">,￥-{{ coupon.value }}</text>
+							<text v-if="totalCoupon">,￥-{{ totalCoupon.toFixed(2) }}</text>
 							,实付
 						</view>
 						<view class="font-size-extra-lg font-weight-bold">￥{{ amount }}</view>
@@ -139,7 +166,7 @@
 			<!-- 支付方式 begin -->
 			<view class="pay-page__payment">
 				<list-cell last :hover="false"><text>支付方式</text></list-cell>
-				<list-cell>
+				<list-cell v-if="continueOrderId == ''">
 					<view class="pay-page__payment-row pay-page__payment-row--disabled d-flex align-items-center justify-content-between w-100"
 						@click="setPayType('yue')">
 						<view class="iconfont iconbalance line-height-100 pay-page__payment-icon"></view>
@@ -160,14 +187,14 @@
 					</view>
 				</list-cell>
 				<!-- #ifdef H5 -->
-				<list-cell>
+				<!-- <list-cell>
 					<view class="pay-page__payment-row d-flex align-items-center justify-content-between w-100" @click="setPayType('alipay')">
 						<view class="iconfont-yshop icon-alipay line-height-100 pay-page__payment-icon pay-page__payment-icon--alipay"></view>
 						<view class="flex-fill">支付宝</view>
 						<view class="iconfont line-height-100 pay-page__checkbox pay-page__checkbox--checked iconradio-button-on" v-if="payType == 'alipay'" ></view>
 						<view class="iconfont line-height-100 pay-page__checkbox iconradio-button-off" v-else ></view>     
 					</view>
-				</list-cell>
+				</list-cell> -->
 				<!-- #endif -->
 			</view>
 			<!-- 支付方式 end -->
@@ -175,7 +202,7 @@
 			<list-cell last @click="goToRemark">
 				<view class="pay-page__remark d-flex flex-fill align-items-center justify-content-between overflow-hidden">
 					<view class="flex-shrink-0 mr-20">备注</view>
-					<view class="text-color-primary flex-fill text-truncate text-right">{{ form.remark || '点击填写备注' }}
+					<view class="text-color-primary flex-fill text-truncate text-right">{{ showRemark }}
 					</view>
 				</view>
 			</list-cell>
@@ -186,7 +213,7 @@
 			<view class="pay-page__footer-label font-size-sm">合计：</view>
 			<view class="pay-page__footer-amount font-size-lg flex-fill">￥{{ amount }}</view>
 			<view class="pay-page__footer-btn bg-primary h-100 d-flex align-items-center just-content-center text-color-white font-size-base"
-				@tap="debounce(submit, 500)">付款</view>
+				@tap="submit">付款</view>
 		</view>
 		<!-- 付款栏 end -->
 		<modal :show="ensureAddressModalVisible" custom :mask-closable="false" :radius="'0rpx'" width="90%">
@@ -208,7 +235,7 @@
 					<button type="primary" size="mini" plain class="pay-page__modal-change-btn"
 						@click="chooseAddress">修改地址</button>
 				</view>
-				<button type="primary" class="pay-page__modal-submit" @tap="debounce(pay, 500)">确认并付款</button>
+				<button type="primary" class="pay-page__modal-submit" @tap="pay">确认并付款</button>
 			</view>
 		</modal>
 		<uv-toast ref="uToast"></uv-toast>
@@ -229,17 +256,20 @@ import  debounce  from '@/uni_modules/uv-ui-tools/libs/function/debounce'
 
 import {
   orderSubmit,
+  orderDetail,
   payUnify,
-  getWechatConfig
+  getWechatConfig,
+  getPayInfo
 } from '@/api/order'
 import {
-  couponCount
+  couponCount,
+  useListByIdList
 } from '@/api/coupon'
 // #ifdef H5
 import * as jweixin from 'weixin-js-sdk'
 // #endif
 const main = useMainStore()
-const { orderType,address, store,location,isLogin,member,mycoupon } = storeToRefs(main)
+const { orderType,address, store,location,member,mycoupon,myCouponList } = storeToRefs(main)
 const active = ref(false)
 const title = ref('支付')
 const jsStr = ref('')
@@ -247,6 +277,7 @@ const cart = ref([])
 const form = ref({
 	remark: ''
 })
+const deskNumber = ref('')
 const  ensureAddressModalVisible = ref(false)
 const  takeoutTIme = ref(false) // 外卖取餐时间picker
 const paramsTime = ref({
@@ -259,6 +290,8 @@ const paramsTime = ref({
 })
 const defaultTime = ref('00:00')
 const takeinTIme = ref(false) // 到店自取时间selector
+// 新增：桌号类型 now现点 store寄存
+const deskType = ref('1')
 const takeinRange = ref([{
 		name: '立即用餐',
 		value: 0
@@ -287,7 +320,9 @@ const takeinRange = ref([{
 const defaultSelector = ref([0])
 const payType = ref('weixin') // 付款方式
 const coupons = ref(0) // 可用优惠券数量
-const coupon = ref(main.mycoupon) // 选中的
+const couponList = ref(main.myCouponList)//选中的列表
+const continueOrderId = ref("")
+// const totalCoupon = ref(0)
 const subscribeMss = ref({
 	'takein': '',
 	'takeout': '',
@@ -295,9 +330,50 @@ const subscribeMss = ref({
 	'takeout_made': ''
 })// 微信订阅信息
 const uToast = ref()
+const showRemark = ref('')
 
 const total = computed(() =>{
 	return cart.value.reduce((acc, cur) => acc + cur.number * cur.price, 0);
+})
+const onClickLeft = ()=>{
+	if(continueOrderId.value){
+		if(deskType.value == '1'){
+			uni.switchTab({
+				url: '/pages/order/order'
+			});
+		}else{
+			uni.navigateTo({
+			  url: '/pages/components/pages/winestoreMylist/winestoreMylist?type=pay' // 你的隐私协议页面路径
+			})
+		}
+	}else{
+		uni.switchTab({
+			url: '/pages/menu/menu'
+		});
+	}
+	
+}
+const setRemark = (val)=>{
+	if(val){
+		form.value.remark = val
+		showRemark.value = val
+	}else if(continueOrderId.value){
+		form.value.remark = ''
+		showRemark.value = ''
+	}else{
+		form.value.remark = ''
+		showRemark.value = '点击填写备注'
+	}
+}
+const totalCoupon = computed(()=>{
+	let sum = 0
+	for(let i=0; i<couponList.value.length; i++){
+		const couponItem = couponList.value[i]
+		if (couponItem?.id && couponItem?.value) {
+			sum += parseFloat(couponItem.value)
+		}
+	}
+	return Number(sum.toFixed(2))
 })
 const amount = computed(() =>{
 	let amount = cart.value.reduce((acc, cur) => acc + cur.number * cur.price, 0);
@@ -308,17 +384,15 @@ const amount = computed(() =>{
 
 	
 	// 减去优惠券
-	if (main.mycoupon.hasOwnProperty('id')) {
-		amount -= parseFloat(main.mycoupon.value);
-	}
+	amount -= totalCoupon.value
+	
 	if(amount < 0){
 		amount = 0
 	}
 	return amount.toFixed(2);
 })
-
 onShow(() => {
-	coupon.value = main.mycoupon
+	couponList.value = main.myCouponList
 	let date = new Date(new Date().getTime() + 3600000); // 一个小时后
 	let hour = date.getHours();
 	let minute = date.getMinutes();
@@ -329,16 +403,17 @@ onShow(() => {
 		minute = '0' + minute;
 	}
 	defaultTime.value = hour + ':' + minute;
-	
-	console.log('member:',member.value)
+
 	
 	if(orderType.value == 'takeout'){
 		active.value = true
 	}else{
 		active.value = false
 	}
+	if(!continueOrderId.value){
+		getCoupons();
+	}
 	
-	getCoupons();
 	
 	let paytype = uni.getStorageSync('paytype');
 	payType.value = paytype ? paytype : 'weixin';
@@ -349,18 +424,46 @@ onHide(() => {
 	coupons.value = 0;
 })
 onLoad((option) => {
-	cart.value = uni.getStorageSync('cart')
-	if(option.remark) {
-		form.value.remark = option.remark
+	console.log('接收到桌号', option)
+	if(option.orderId){
+		continueOrderId.value = option.orderId
+		getDetail(option.orderId);
+		deskType.value = '1'
+	}else{
+		
+		    // 赋值给页面变量
+		deskNumber.value = option.localNumb
+		cart.value = uni.getStorageSync('cart')
+		
 	}
-})
+	
+	setRemark(option.remark)
 
-const getSubscribeMss = async() => {
-	 let data = []
+})
+const getDetail =  async(id) => {
+	let data = await orderDetail(id);
+	console.log("====",data,"-------************")
 	if (data) {
-		subscribeMss.value = data;
+		deskNumber.value = data.deskNumber
+		cart.value = data.cartInfo
+		cart.value.forEach(info => {
+			info.name = info.title
+			info.valueStr = info.spec
+		})
+		setRemark(data.mark)
+		// amount.value = data.payPrice
+		// totalCoupon = data.couponPrice
+		if(data.couponIdList){
+			let param = data.couponIdList.split(",")
+			console.log(param,'-----param---------')
+			// let couponData = await useListByIdList(param)
+			couponList.value = await useListByIdList(param)
+		}
 	}
+	
+	
 }
+
 // 更改支付方式
 const setPayType = (paytype) => {
 	payType.value = 'weixin';
@@ -371,8 +474,8 @@ const setPayType = (paytype) => {
 	})
 }
 const getCoupons = async() => {
-	//0=通用,1=自取,2=外卖
-	let type = orderType.value == 'takein' ? 1 : 2;
+	//0=通用,1=堂食,2=外卖
+	let type = orderType.value == 'takein' ? 4 : 2;
 	let data = await couponCount({
 		shop_id: store.value.id ? store.value.id : 0,
 		type: type
@@ -404,7 +507,7 @@ const choiceTime = (value) => {
 	if (minute < 10) {
 		minute = '0' + minute;
 	}
-	defaultTime,value = hour + ':' + minute;
+	defaultTime.value = hour + ':' + minute;
 	takeoutTIme.value = false;
 }
 const cancelTime = (value) => {
@@ -418,33 +521,13 @@ const takeinCancelTime = (value) => {
 const takeinConfirmTime = (value) => {
 	defaultSelector.value = value;
 }
-// 是否外卖开关
-const takout = (value) => {
-	let type = 'takeout';
-	if (value == false) {
-		type = 'takein';
-	}
-	main.SET_ORDER_TYPE(type);
 
-	// 如果存在优惠券看看需不需要清除
-	if (coupon.value.hasOwnProperty('type')) {
-		//0=通用,1=自取,2=外卖
-		if (coupon.value.type != 0) {
-			if (coupon.value.type == 1 && orderType.value == 'takeout') {
-				coupon.value = {};
-			}
-			if (coupon.value.type == 2 && orderType.value == 'takeint') {
-				coupon.value = {};
-			}
-		}
-	}
-	subscribeMss.value = [];
-	coupons.value = 0;
-	getCoupons();
-}
 const goToRemark = () => {
+	if(continueOrderId.value){
+		return
+	}
 	uni.navigateTo({
-		url: '/pages/components/pages/remark/remark?remark=' + form.value.remark
+		url: '/pages/components/pages/remark/remark?remark=' + form.value.remark + '&localNumb=' + deskNumber.value
 	});
 }
 const chooseAddress = () => {
@@ -453,12 +536,15 @@ const chooseAddress = () => {
 	});
 }
 const goToPackages = () => {
-	let newamount = amount.value;
-	let coupon_id = coupon.value.id ? coupon.value.id : 0;
-	let type = orderType.value == 'takein' ? 1 : 2;
+	if(continueOrderId.value){
+		return
+	}
+	let newamount = total.value.toFixed(2);
+	let coupon_id_list = couponList.value.map(item => item.id)
+	let type = orderType.value == 'takein' ? 4 : 2;
 	let shop_id = store.value.id;
 	uni.navigateTo({
-		url: '/pages/components/pages/packages/index?amount=' + newamount + '&coupon_id=' + coupon_id +
+		url: '/pages/components/pages/packages/index?amount=' + newamount + '&selectedIds=' + coupon_id_list +
 			'&shop_id=' + shop_id + '&type=' + type
 	});
 }
@@ -468,6 +554,27 @@ const goToShop = () => {
 	});
 }
 const submit = () => {
+	if(continueOrderId.value){
+		rePay()
+		return
+	}
+	let shop = main.store
+	if(shop.couponUseNumLimit > 0 && couponList.value.length > shop.couponUseNumLimit){
+		uToast.value.show({
+			message:`超过最大使用数量【${shop.couponUseNumLimit}张】`,
+			type:'error'
+		})
+		return
+	}
+	console.log("----totalCoupon.value---",totalCoupon.value)
+	
+	if(shop.couponUseAmountLimit > 0 && totalCoupon.value > shop.couponUseAmountLimit){
+		uToast.value.show({
+			message:`超过最大使用读【限额${shop.couponUseAmountLimit}元】`,
+			type:'error'
+		})
+		return
+	}
 	if (orderType.value == 'takeout') {
 		// 外卖类型
 		if (typeof address.value.id == 'undefined') {
@@ -492,6 +599,50 @@ const submit = () => {
 	} else {
 		pay();
 	}
+}
+const rePay = async() => {
+	uni.showLoading({
+		title: '加载中'
+	});
+	let payInfo = await getPayInfo(continueOrderId.value)
+	uni.hideLoading();
+	if(!payInfo){
+		uToast.value.show({message:'未找到支付信息，请联系工作人员',type: 'info'});
+		return
+	}
+	uni.requestPayment({
+		provider: 'wxpay',
+		timeStamp: payInfo.timeStamp,
+		nonceStr: payInfo.nonceStr,
+		package: payInfo.packageVal,
+		signType: 'MD5',
+		paySign: payInfo.paySign,
+		success: function(res) {
+	
+			if(deskType.value == '1'){
+				uni.switchTab({
+					url: '/pages/order/order'
+				});
+			}else{
+				uni.navigateTo({
+				  url: '/pages/components/pages/winestoreMylist/winestoreMylist?type=pay' // 你的隐私协议页面路径
+				})
+			}
+			
+		},
+		fail: function(err) {
+			console.log('fail:' + JSON.stringify(err));
+			uni.switchTab({
+				url: '/pages/order/order'
+			});
+		}
+	});
+}
+const changeDeskType = (val) => {
+	if(continueOrderId.value){
+		return
+	}
+	deskType.value = val
 }
 const pay = async() => {
 	let that = this;
@@ -526,22 +677,31 @@ const pay = async() => {
 	if(amount.value == 0){
 		payType.value = 'yue'
 	}
+	if(!deskNumber.value){
+		//后面要开放
+		uToast.value.show({message:'请先扫描桌号',type: 'info'});
+		return
+	}
 	uni.showLoading({
 		title: '加载中'
 	});
-
+	let couponIdList = couponList.value.map(info => info.id)
+	
 	let data = {
 		orderType: orderType.value, // 购买类型:takein=自取,takeout=外卖
 		addressId:orderType.value == 'takeout' ? address.value.id : 0, // 外卖配送地址
 		shopId: store.value.id, // 店铺id
 		mobile: member.value.mobile, // 联系电话
+		deskNumber: deskNumber.value,
 		gettime: takeinRange.value[defaultSelector.value[0]].value, // 取餐时间
 		payType: payType.value, // 支付类型
 		remark: form.value.remark, // 备注
+		deskType: deskType.value, //新增桌号类型 now现点 / store寄存
 		productId: [],
 		spec: [],
 		number: [],
-		couponId: coupon.value.id ? coupon.value.id : 0 // 优惠券id
+		couponIdList: couponIdList,
+		couponId: 0 // 优惠券id
 	};
 
 	cart.value.forEach((item, index) => {
@@ -601,12 +761,16 @@ const balancePay = async(order) => {
 	member.value.money -= amount.value
 	main.SET_MEMBER(member.value)
 	uni.removeStorageSync('cart');
-	uni.switchTab({
-		url: '/pages/order/order',
-		fail(res) {
-			console.log(res);
-		}
-	});
+	main.SET_COUPON_LIST([])
+	if(deskType.value == '1'){
+		uni.switchTab({
+			url: '/pages/order/order'
+		});
+	}else{
+		uni.navigateTo({
+		  url: '/pages/components/pages/winestoreMylist/winestoreMylist?type=pay&result=s' // 你的隐私协议页面路径
+		})
+	}
 }
 const weixinPay = async(order) => {
 	let from = 'routine'
@@ -621,6 +785,7 @@ const weixinPay = async(order) => {
 	let data = await payUnify({
 		uni: order.orderId,
 		from: from,
+		deskType: deskType.value, //新增桌号类型 now现点 / store寄存
 		paytype: 'weixin'
 	});
 	console.log('param2:',data)
@@ -637,7 +802,8 @@ const weixinPay = async(order) => {
 		console.log('data1:',data)
 	} else if (data.trade_type == 'JSAPI') {
 		console.log('param:',data)
-
+		uni.removeStorageSync('cart');
+		main.SET_COUPON_LIST([])
 		// #ifdef MP-WEIXIN
 		uni.requestPayment({
 			provider: 'wxpay',
@@ -648,13 +814,30 @@ const weixinPay = async(order) => {
 			paySign: data.data.paySign,
 			success: function(res) {
 
-				uni.removeStorageSync('cart');
-				uni.switchTab({
-					url: '/pages/order/order'
-				});
+				
+				if(deskType.value == '1'){
+					uni.switchTab({
+						url: '/pages/order/order'
+					});
+				}else{
+					uni.navigateTo({
+					  url: '/pages/components/pages/winestoreMylist/winestoreMylist?type=pay&result=s' // 你的隐私协议页面路径
+					})
+				}
+				
 			},
 			fail: function(err) {
 				console.log('fail:' + JSON.stringify(err));
+				
+				if(deskType.value == '1'){
+					uni.switchTab({
+						url: '/pages/order/order'
+					});
+				}else{
+					uni.navigateTo({
+					  url: '/pages/components/pages/winestoreMylist/winestoreMylist?type=pay&result=f' // 你的隐私协议页面路径
+					})
+				}
 			}
 		});
 		// #endif
@@ -703,6 +886,7 @@ const aliPay = async(order) => {
 
 </script>
 
+
 <style lang="scss" scoped>
 // 支付页局部 token（与 uni.scss 全局变量配合）
 $pay-page-padding: $spacing-row-lg;
@@ -716,13 +900,13 @@ $pay-checkbox-size: 36rpx;
 $pay-checkbox-gap: 10rpx;
 $pay-payment-gap: 10rpx;
 $pay-footer-height: 100rpx;
-$pay-footer-shadow: 0 0 20rpx rgba($color: #000, $alpha: 0.1);
+$pay-footer-shadow: 0 0 20rpx rgba($color: #000, $alpha: 0.08);
 $pay-footer-z-index: 1;
 $pay-footer-label-margin: $spacing-row-base;
 $pay-footer-btn-padding-x: 60rpx;
 $pay-remark-margin-bottom: 110rpx;
 $pay-notice-padding-y: $spacing-row-base;
-$pay-wechat-color: #7eb73a;
+$pay-wechat-color: #38a830;
 $pay-alipay-color: #07b4fd;
 $pay-modal-close-size: 40rpx;
 $pay-modal-title-margin-bottom: 40px;
@@ -735,9 +919,69 @@ $pay-modal-btn-radius: 50rem;
 $pay-modal-btn-line-height: 3;
 $pay-modal-change-btn-line-height: 2;
 
+.desk-header-bg{
+	margin: 0 -$pay-page-padding;
+	padding: 40rpx $pay-page-padding 30rpx;
+    // 顶部柔和紫蓝渐变，参考效果图
+	background: linear-gradient(180deg,#4048e8,#d56bf8);
+}
+
+.deskNumbCls {
+	display: inline-flex;
+	align-items: center;
+	gap: 14rpx;
+	padding: 16rpx 36rpx;
+    //毛玻璃半透胶囊效果
+	background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(12rpx);
+	color: #ffffff;
+	border-radius: 100rpx;
+	font-size: 34rpx;
+	box-shadow: 0 4rpx 16rpx rgba(60, 80, 255, 0.25);
+	border:1rpx solid rgba(255,255,255,0.35);
+
+	.desk-icon {
+		font-size: 38rpx;
+		line-height: 1;
+	}
+	.desk-text {
+		font-weight: 600;
+		letter-spacing:2rpx;
+	}
+}
+/*现点 / 寄存 tab 改造，参考效果图渐变+阴影*/
+.desk-type-wrap{
+	display: flex;
+	gap:24rpx;
+	padding:20rpx 15rpx;
+	margin-bottom:20rpx;
+}
+.desk-type-item{
+	flex:1;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	text-align:center;
+	height:88rpx;
+	border-radius:20rpx;
+	border:none;
+	background:#ffffff;
+	font-size:30rpx;
+	color:#666666;
+    box-shadow:0 4rpx 14rpx rgba(0,0,0,0.07);
+	transition: all 0.24s ease;
+	&.active{
+        //激活态绿色渐变
+		background: linear-gradient(90deg,#52c748,#38a830);
+		color:#ffffff;
+		font-weight:500;
+        box-shadow:0 6rpx 16rpx rgba(56,168,48,0.3);
+	}
+}
 .pay-page {
 	padding: $pay-page-padding;
 	--pay-cart-thumb-size: #{$img-size-lg};
+    background-color:#f7f7f9;
 
 	&__content {
 		margin-bottom: $pay-page-content-offset;
@@ -785,6 +1029,7 @@ $pay-modal-change-btn-line-height: 2;
 		flex-shrink: 0;
 		width: var(--pay-cart-thumb-size);
 		height: var(--pay-cart-thumb-size);
+        border-radius:12rpx;
 	}
 
 	&__notice {
@@ -819,7 +1064,7 @@ $pay-modal-change-btn-line-height: 2;
 		font-size: $pay-checkbox-size;
 
 		&--checked {
-			color: $color-primary;
+			color: $pay-wechat-color;
 		}
 	}
 
@@ -831,14 +1076,17 @@ $pay-modal-change-btn-line-height: 2;
 		z-index: $pay-footer-z-index;
 		height: $pay-footer-height;
 		box-shadow: $pay-footer-shadow;
+        border-top:1rpx solid #eee;
 	}
 
 	&__footer-label {
 		margin-left: $pay-footer-label-margin;
 	}
-
+    //底部付款按钮：大圆角
 	&__footer-btn {
 		padding: 0 $pay-footer-btn-padding-x;
+        border-radius:100rpx;
+        background:linear-gradient(90deg,#52c748,#38a830) !important;
 	}
 
 	&__modal-close {
@@ -865,5 +1113,17 @@ $pay-modal-change-btn-line-height: 2;
 		line-height: $pay-modal-btn-line-height;
 		border-radius: $pay-modal-btn-radius !important;
 	}
+}
+
+//覆盖list-cell全局样式，实现卡片圆角、柔和阴影
+:deep(.uv-list-cell) {
+    background:#ffffff;
+    border-radius:16rpx;
+    margin-bottom:16rpx;
+    box-shadow:0 2rpx 12rpx rgba(0,0,0,0.04);
+    border:none;
+}
+:deep(.uv-list-cell:last-child){
+    margin-bottom:0;
 }
 </style>

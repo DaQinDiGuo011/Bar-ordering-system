@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+	  :fixed="true"
+	  	  bgColor="#ffffff"
+	  	  :title="title"
+	  	  left-arrow
+	  	  :placeholder="true"c
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="refund-page">
@@ -47,9 +49,14 @@ const refund  = async() => {
 	let data = await orderRefund({refundReasonWapExplain:refundReasonWapExplain.value,uni:orderId.value,text:'协商一致'});
 	if (data) {
 		uni.showToast({
-			title: '提交成功',
+			title: '提交成功，请等候工作人员进行退款',
 			icon: 'success'
 		})
+		setTimeout(()=>{
+		  uni.switchTab({
+		  	url: '/pages/order/order'
+		  });
+		},800)
 	}
 }
 

@@ -47,6 +47,23 @@
           <el-image style="width: 100px; height: 100px" :src="scope.row.image"  />
         </template>
       </el-table-column>
+       <!-- 新增logo图片列 -->
+      <el-table-column label="Logo图片" align="center" prop="logoImage" width="130">
+        <template #default="scope">
+          <el-image v-if="scope.row.logoImage" style="width:80px;height:80px" :src="scope.row.logoImage" />
+          <span v-else>-</span>
+        </template>
+      </el-table-column>
+       <!-- 新增字段 -->
+      
+      <el-table-column label="优惠券使用数量限制(0-不限制)" align="center" prop="couponUseNumLimit" width="140" />
+      <el-table-column label="优惠券使用额度限制(0.00-不限制)" align="center" prop="couponUseAmountLimit" width="140" />
+      <el-table-column label="经营内容" align="center" prop="businessContent" show-overflow-tooltip width="180" />
+      <el-table-column label="WiFi信息" align="center" prop="wifiInfo" width="140" />
+      <el-table-column label="WiFi密码" align="center" prop="wifiPwd" width="140" />
+      <!-- 字符串时间，直接prop，不要格式化器 -->
+      <el-table-column label="门店营业开始" align="center" prop="businessStartStr" width="140" />
+      <el-table-column label="门店营业结束" align="center" prop="businessEndStr" width="140" />
       <el-table-column label="经度" align="center" prop="lng" width="150" />
       <el-table-column label="纬度" align="center" prop="lat"  width="150" />
       <el-table-column label="外卖配送距离" align="center" prop="distance" width="150">
@@ -163,6 +180,7 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await ShopApi.getShopPage(queryParams)
+    console.log("-----------data---",data)
     list.value = data.list
     total.value = data.total
   } finally {

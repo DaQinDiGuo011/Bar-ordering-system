@@ -2,7 +2,6 @@ package co.yixiang.yshop.module.member.service.auth;
 
 import co.yixiang.yshop.module.member.controller.app.auth.vo.*;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 /**
@@ -117,5 +116,14 @@ public interface MemberAuthService {
      * @return 登录结果
      */
     AppAuthLoginRespVO refreshToken(String refreshToken);
+
+    /**
+     * 德旺小程序通过手机号登录
+     * @param loginVO
+     * @return
+     */
+    AppLoginRespVO loginByVchart(AppWxPhoneLoginVO loginVO);
+
+    AppLoginRespVO loginByUserCode(AppWxPhoneLoginVO loginVO);
 
 }

@@ -1,9 +1,9 @@
 package co.yixiang.yshop.module.order.controller.app.order.param;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
 
@@ -24,8 +24,11 @@ public class AppOrderParam implements Serializable {
     @Schema(description = "手机号", required = true)
     private String mobile;
 
+//    @Schema(description = "优惠券ID", required = true)
+//    private String couponId;
+
     @Schema(description = "优惠券ID", required = true)
-    private String couponId;
+    private List<String> couponIdList;
 
     @Schema(description = "购买类型:takein=自取,takeout=外卖,desk=扫码点餐", required = true)
     private String orderType;
@@ -60,5 +63,8 @@ public class AppOrderParam implements Serializable {
 
     @Schema(description = "订单号", required = true)
     private String orderId;
+
+    @Schema(description = "现点/寄存", required = true)
+    private String deskType;
 
 }

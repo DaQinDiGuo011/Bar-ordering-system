@@ -51,11 +51,17 @@ export interface StoreOrderVO {
   shippingType: boolean
   isChannel: byte
   isSystemDel: boolean
+  refuseReason: string
 }
 
 // 查询订单列表
 export const getStoreOrderPage = async (params: StoreOrderPageReqVO) => {
   return await request.get({ url: `/order/store-order/page`, params })
+}
+
+// 查询工作台订单列表
+export const getWorkStoreOrderPage = async (params: StoreOrderPageReqVO) => {
+  return await request.get({ url: `/order/store-order/work-page`, params })
 }
 
 // 查询订单详情
@@ -116,5 +122,9 @@ export const getShopCount = async () => {
 
 export const orderNoticeUrl = async () => {
   return await request.get({ url: `/order/store-order/notice`})
+}
+
+export const reRefundUrl = async (data: StoreOrderVO) => {
+  return await request.post({ url: `/order/store-order/reRefund`, data})
 }
 

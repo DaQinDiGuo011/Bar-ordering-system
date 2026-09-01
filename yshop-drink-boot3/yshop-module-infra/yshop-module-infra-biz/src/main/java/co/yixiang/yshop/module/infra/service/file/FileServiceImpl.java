@@ -5,16 +5,17 @@ import cn.hutool.core.util.StrUtil;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.framework.common.util.io.FileUtils;
 import co.yixiang.yshop.framework.common.util.object.BeanUtils;
-import co.yixiang.yshop.module.infra.framework.file.core.client.FileClient;
-import co.yixiang.yshop.module.infra.framework.file.core.client.s3.FilePresignedUrlRespDTO;
-import co.yixiang.yshop.module.infra.framework.file.core.utils.FileTypeUtils;
 import co.yixiang.yshop.module.infra.controller.admin.file.vo.file.FileCreateReqVO;
 import co.yixiang.yshop.module.infra.controller.admin.file.vo.file.FilePageReqVO;
 import co.yixiang.yshop.module.infra.controller.admin.file.vo.file.FilePresignedUrlRespVO;
 import co.yixiang.yshop.module.infra.dal.dataobject.file.FileDO;
 import co.yixiang.yshop.module.infra.dal.mysql.file.FileMapper;
+import co.yixiang.yshop.module.infra.framework.file.core.client.FileClient;
+import co.yixiang.yshop.module.infra.framework.file.core.client.s3.FilePresignedUrlRespDTO;
+import co.yixiang.yshop.module.infra.framework.file.core.utils.FileTypeUtils;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -25,6 +26,7 @@ import static co.yixiang.yshop.module.infra.enums.ErrorCodeConstants.FILE_NOT_EX
  *
  * @author yshop
  */
+@Slf4j
 @Service
 public class FileServiceImpl implements FileService {
 
@@ -42,10 +44,13 @@ public class FileServiceImpl implements FileService {
     @Override
     @SneakyThrows
     public String createFile(String name, String path, byte[] content) {
+        log.debug("上传文件名：{}", name);
         // 计算默认的 path 名
         String type = FileTypeUtils.getMineType(content, name);
         if (StrUtil.isEmpty(path)) {
             path = FileUtils.generatePath(content, name);
+        }else{
+            path = path + "/" + FileUtils.generatePath(content, name);
         }
         // 如果 name 为空，则使用 path 填充
         if (StrUtil.isEmpty(name)) {

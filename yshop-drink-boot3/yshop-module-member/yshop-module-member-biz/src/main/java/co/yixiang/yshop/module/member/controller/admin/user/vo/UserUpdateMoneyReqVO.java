@@ -28,6 +28,6 @@ public class UserUpdateMoneyReqVO {
     @NotNull(message = "积分不能为空")
     private String integral;
 
-
+    private String pwd;
 
 }

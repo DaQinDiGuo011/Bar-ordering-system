@@ -13,3 +13,7 @@ export function menuGoods(data) {
   return api.get('/product/products', data, { login: false })
 }
 
+
+export function getShopInfo(data){
+	return api.get('/store/getShop', data, { login: false })
+}

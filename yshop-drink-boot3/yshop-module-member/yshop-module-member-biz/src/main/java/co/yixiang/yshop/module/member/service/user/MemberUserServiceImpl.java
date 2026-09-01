@@ -10,6 +10,7 @@ import co.yixiang.yshop.module.coupon.service.couponuser.AppCouponUserService;
 import co.yixiang.yshop.module.infra.api.file.FileApi;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppUserQueryVo;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppUserUpdateMobileReqVO;
+import co.yixiang.yshop.module.member.controller.app.user.vo.TopPointsVO;
 import co.yixiang.yshop.module.member.convert.user.UserConvert;
 import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
 import co.yixiang.yshop.module.member.dal.dataobject.userbill.UserBillDO;
@@ -17,6 +18,7 @@ import co.yixiang.yshop.module.member.dal.mysql.user.MemberUserMapper;
 import co.yixiang.yshop.module.member.dal.mysql.userbill.UserBillMapper;
 import co.yixiang.yshop.module.member.enums.BillDetailEnum;
 import co.yixiang.yshop.module.member.service.userbill.UserBillService;
+import co.yixiang.yshop.module.member.util.Constant;
 import co.yixiang.yshop.module.system.api.sms.SmsCodeApi;
 import co.yixiang.yshop.module.system.api.sms.dto.code.SmsCodeUseReqDTO;
 import co.yixiang.yshop.module.system.enums.sms.SmsSceneEnum;
@@ -27,6 +29,8 @@ import com.google.common.annotations.VisibleForTesting;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RScoredSortedSet;
+import org.redisson.api.RedissonClient;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -35,12 +39,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static co.yixiang.yshop.framework.common.util.servlet.ServletUtils.getClientIP;
 import static co.yixiang.yshop.module.member.enums.ErrorCodeConstants.USER_NOT_EXISTS;
+import static co.yixiang.yshop.module.member.util.Constant.TOP_LIMIT;
 
 /**
  * 会员 User Service 实现类
@@ -68,13 +75,19 @@ public class MemberUserServiceImpl extends ServiceImpl<MemberUserMapper,MemberUs
     private UserBillMapper userBillMapper;
     @Resource
     private UserBillService billService;
-
+    @Resource
+    private RedissonClient redissonClient;
 
 
 
     @Override
     public MemberUserDO getUserByMobile(String mobile) {
         return memberUserMapper.selectByMobile(mobile);
+    }
+
+    @Override
+    public MemberUserDO getUserByUserCode(String userCode) {
+        return memberUserMapper.selectOne("openid", userCode);
     }
 
     @Override
@@ -128,7 +141,7 @@ public class MemberUserServiceImpl extends ServiceImpl<MemberUserMapper,MemberUs
         AppUserQueryVo appUserQueryVo = UserConvert.INSTANCE.convert3(memberUserMapper.selectById(id));
         Long count = appCouponUserService.count(new LambdaQueryWrapper<CouponUserDO>()
                 .eq(CouponUserDO::getUserId,id)
-                .eq(CouponUserDO::getStatus, ShopCommonEnum.IS_STATUS_1));
+                .eq(CouponUserDO::getStatus, ShopCommonEnum.IS_STATUS_0.getValue()));
         appUserQueryVo.setCouponCount(count);
         QueryWrapper<UserBillDO> wrapper = new QueryWrapper<>();
         wrapper.select("SUM(number) as sumAll")
@@ -142,8 +155,33 @@ public class MemberUserServiceImpl extends ServiceImpl<MemberUserMapper,MemberUs
             appUserQueryVo.setSumMoney(userBillDO.getSumAll());
         }
 
-
         return appUserQueryVo;
+    }
+
+    @Override
+    public List<TopPointsVO> getTop50Rank() {
+        List<TopPointsVO> pointsVOList = new ArrayList<>();
+
+        RScoredSortedSet<MemberUserDO> rankSet = redissonClient.getScoredSortedSet(Constant.REDIS_KEY_INTEGRAL_RANK_KEY);
+        // 按分数倒序，取0~49，前50条
+        Collection<MemberUserDO> topStrList = rankSet.valueRangeReversed(0, TOP_LIMIT -1);
+        List<MemberUserDO> memberUserDOList = topStrList.stream().collect(Collectors.toList());
+        if(memberUserDOList == null || memberUserDOList.size() == 0){
+            memberUserDOList = memberUserMapper.selectTop50Rank();
+        }
+
+        for(int i=0; i < memberUserDOList.size(); i++){
+            MemberUserDO userDO = memberUserDOList.get(i);
+            TopPointsVO topPointsVO = new TopPointsVO();
+            topPointsVO.setId(userDO.getId());
+            topPointsVO.setIntegral(userDO.getIntegral());
+            topPointsVO.setAvatar(userDO.getAvatar());
+//            topPointsVO.setMobile(userDO.getMobile());
+            topPointsVO.setNickname(userDO.getNickname());
+            topPointsVO.setRankNo(i + 1);
+            pointsVOList.add(topPointsVO);
+        }
+        return pointsVOList;
     }
     /**
      * 减去用户余额

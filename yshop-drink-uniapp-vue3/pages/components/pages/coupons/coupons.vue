@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+	  :fixed="true"
+	  	  bgColor="#ffffff"
+	  	  :title="title"
+	  	  left-arrow
+	  	  :placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="container coupons-page position-relative w-100 h-100 overflow-hidden">
@@ -139,7 +141,6 @@ import {
   couponIndexApi
 } from '@/api/coupon'
 const main = useMainStore()
-const { isLogin } = storeToRefs(main)
 const title = ref('优惠券')
 
 const tabs = ref([

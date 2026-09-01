@@ -21,8 +21,8 @@ public enum OrderInfoEnum {
 	STATUS_NE1(-1,"申请退款"),
 	STATUS_NE2(-2,"退款成功"),
 	STATUS_0(0,"默认"),
-	STATUS_1(1,"待收货"),
-	STATUS_2(2,"已收货"),
+	STATUS_1(1,"制作中"),
+	STATUS_2(2,"送餐中"),
 	STATUS_3(3,"已完成"),
 
 	PAY_STATUS_0(0,"未支付"),
@@ -31,6 +31,7 @@ public enum OrderInfoEnum {
 	REFUND_STATUS_0(0,"正常"),
 	REFUND_STATUS_1(1,"退款中"),
 	REFUND_STATUS_2(2,"已退款"),
+	REFUND_STATUS_3(3,"拒绝退款"),
 
 	BARGAIN_STATUS_1(1,"参与中"),
 	BARGAIN_STATUS_2(2,"参与失败"),

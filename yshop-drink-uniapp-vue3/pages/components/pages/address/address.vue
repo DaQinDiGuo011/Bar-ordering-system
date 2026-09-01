@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+	  :fixed="true"
+	  	  bgColor="#ffffff"
+	  	  :title="title"
+	  	  left-arrow
+	  	  :placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="container address-page">
@@ -48,7 +50,7 @@ import {
   shopGetDistanceFromLocation
 } from '@/api/address'
 const main = useMainStore()
-const { isLogin,addresses,store } = storeToRefs(main)
+const { addresses,store } = storeToRefs(main)
 const title = ref('我的地址')
 
 const scene = ref('menu')

@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import co.yixiang.yshop.framework.security.core.LoginUser;
 import co.yixiang.yshop.framework.tenant.core.context.TenantContextHolder;
 import co.yixiang.yshop.framework.websocket.core.util.WebSocketFrameworkUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author yshop
  */
+@Slf4j
 public class WebSocketSessionManagerImpl implements WebSocketSessionManager {
 
     /**
@@ -39,6 +41,7 @@ public class WebSocketSessionManagerImpl implements WebSocketSessionManager {
 
     @Override
     public void addSession(WebSocketSession session) {
+        log.info("*****添加sesstion={}到socket Map 里", session);
         // 添加到 idSessions 中
         idSessions.put(session.getId(), session);
         // 添加到 userSessions 中

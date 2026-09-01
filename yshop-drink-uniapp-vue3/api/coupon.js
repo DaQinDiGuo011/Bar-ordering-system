@@ -29,3 +29,6 @@ export function couponCount(data) {
 }
 
 
+export function useListByIdList(data) {
+  return api.get(`/coupon/useListByIdList?couponIdList=`+ data, { login: true })
+}

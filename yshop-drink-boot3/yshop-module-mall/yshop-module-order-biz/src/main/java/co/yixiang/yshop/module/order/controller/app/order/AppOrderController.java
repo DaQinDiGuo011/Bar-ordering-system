@@ -10,26 +10,29 @@ package co.yixiang.yshop.module.order.controller.app.order;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import co.yixiang.yshop.framework.common.enums.OrderInfoEnum;
 import co.yixiang.yshop.framework.common.pojo.CommonResult;
 import co.yixiang.yshop.framework.security.core.annotations.PreAuthenticated;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppUserOrderCountVo;
+import co.yixiang.yshop.module.member.dal.dataobject.user.RechargeOrderDO;
+import co.yixiang.yshop.module.member.service.user.RechargeService;
 import co.yixiang.yshop.module.order.controller.app.order.param.*;
 import co.yixiang.yshop.module.order.controller.app.order.vo.AppStoreOrderQueryVo;
-import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
+import co.yixiang.yshop.module.order.controller.app.order.vo.BodyRepeatHttpServletRequestWrapper;
+import co.yixiang.yshop.module.order.dal.dataobject.storeorder.YshopPayWechatDO;
 import co.yixiang.yshop.module.order.dal.redis.order.AsyncOrderRedisDAO;
 import co.yixiang.yshop.module.order.service.storeorder.AppStoreOrderService;
+import co.yixiang.yshop.module.order.service.storeorder.YshopPayWechatParamService;
 import co.yixiang.yshop.module.pay.http.HttpRequestNoticeNewParams;
 import co.yixiang.yshop.module.store.controller.app.storeshop.vo.AppStoreShopVO;
 import co.yixiang.yshop.module.store.convert.storeshop.StoreShopConvert;
 import co.yixiang.yshop.module.store.dal.dataobject.storeshop.StoreShopDO;
 import co.yixiang.yshop.module.store.service.storeshop.AppStoreShopService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.egzosn.pay.spring.boot.core.PayServiceManager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,15 +41,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static co.yixiang.yshop.framework.common.pojo.CommonResult.success;
 import static co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
-import static co.yixiang.yshop.module.order.enums.ErrorCodeConstants.PARAM_ERROR;
-import static co.yixiang.yshop.module.order.enums.ErrorCodeConstants.STORE_ORDER_NOT_EXISTS;
+import static co.yixiang.yshop.module.order.enums.ErrorCodeConstants.*;
 
 /**
  * <p>
@@ -68,9 +75,11 @@ public class AppOrderController {
     private final PayServiceManager manager;
     private final AppStoreShopService appStoreShopService;
 ;
+    @Resource
+    private RechargeService rechargeService;
 
-
-
+    @Resource
+    private YshopPayWechatParamService wechatParamService;
     /**
      * 订单创建
      */
@@ -103,9 +112,53 @@ public class AppOrderController {
      */
     @RequestMapping(value = "/notify/payBack{detailsId}.json")
     public String payBack(HttpServletRequest request, @PathVariable String detailsId)  {
-        return manager.payBack(detailsId, new HttpRequestNoticeNewParams(request));
+        try {
+            BodyRepeatHttpServletRequestWrapper wrapperRequest = new BodyRepeatHttpServletRequestWrapper(request);
+            String xml = getBody(wrapperRequest);
+            log.info("微信回调 request xml={}", xml);
+
+            String outTradeNo = getXmlNode(xml, "out_trade_no");
+            if(outTradeNo != null){
+                outTradeNo = outTradeNo.replace("<![CDATA[", "")
+                        .replace("]]>", "")
+                        .trim();
+            }
+            log.info("微信回调 out_tradeNo={}", outTradeNo);
+            if(outTradeNo != null){
+                RechargeOrderDO orderDO = rechargeService.getOrderByNo(outTradeNo);
+                if(orderDO != null){
+                    log.info("----充值回调，订单:{}",outTradeNo);
+                    rechargeService.handlePaySuccess(outTradeNo);
+                }
+            }
+            return manager.payBack(detailsId, new HttpRequestNoticeNewParams(wrapperRequest));
+        }catch (Exception e){
+            log.error("获取回调参数失败：{}", e);
+        }
+
+        return "";
     }
 
+    /**读取request body文本*/
+    private String getBody(HttpServletRequest request) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream(), StandardCharsets.UTF_8));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+        return sb.toString();
+    }
+
+    /**简单正则提取xml节点*/
+    private String getXmlNode(String xml, String node){
+        Pattern p = Pattern.compile("<"+node+">(.*?)</"+node+">");
+        Matcher m = p.matcher(xml);
+        if(m.find()){
+            return m.group(1);
+        }
+        return null;
+    }
 
     /**
      * 订单列表
@@ -233,9 +286,25 @@ public class AppOrderController {
 
 
 
+    @PreAuthenticated
+    @GetMapping("/getPayInfo/{orderId}")
+    @Operation(summary = "订单详情")
+    @Parameter(name = "orderId", description = "orderId", required = true, example = "10      ")
+    public CommonResult<YshopPayWechatDO> getPayInfo(@PathVariable String orderId) {
 
-
-
+        if (StrUtil.isEmpty(orderId)) {
+            throw exception(PARAM_ERROR);
+        }
+        Long uid = getLoginUserId();
+        YshopPayWechatDO wechatDO = wechatParamService.getInfoByOrderId(orderId);
+        if (ObjectUtil.isNull(wechatDO)) {
+            throw exception(PAY_INFO_NOT_EXIT);
+        }
+        if(uid != Long.valueOf(wechatDO.getCreator())){
+            throw exception(PAY_USER_NOT_CURRENT);
+        }
+        return success(wechatDO);
+    }
 
 }
 

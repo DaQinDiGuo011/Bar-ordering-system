@@ -4,13 +4,10 @@ package co.yixiang.yshop.module.member.controller.app.user.vo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
-import static co.yixiang.yshop.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 
 /**
  * <p>
@@ -74,7 +71,7 @@ public class AppUserQueryVo implements Serializable {
     private BigDecimal brokeragePrice;
 
     @Schema(description = "用户剩余积分", required = true)
-    private BigDecimal integral;
+    private Integer integral;
 
     @Schema(description = "连续签到天数", required = true)
     private Integer signNum;
@@ -108,6 +105,15 @@ public class AppUserQueryVo implements Serializable {
     @Schema(description = "用户登陆类型，h5,wechat,routine", required = true)
     private String loginType;
 
+    /**
+            * 累计获得积分
+     */
+    private Integer totalIncome;
+    /**
+     * 累计消耗积分
+     */
+    private Integer totalOut;
 
+    private Long wineCount;
 
 }

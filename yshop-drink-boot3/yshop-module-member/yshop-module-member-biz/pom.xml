@@ -95,6 +95,24 @@
             <groupId>co.yixiang.boot</groupId>
             <artifactId>yshop-spring-boot-starter-biz-ip</artifactId>
         </dependency>
+        <dependency>
+            <groupId>co.yixiang.boot</groupId>
+            <artifactId>yshop-module-infra-biz</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.egzosn</groupId>
+            <artifactId>pay-spring-boot</artifactId>
+            <version>1.0.5</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.egzosn</groupId>
+            <artifactId>pay-java-common</artifactId>
+            <version>2.14.9</version>
+            <scope>compile</scope>
+        </dependency>
 
 
         <!-- 工具类相关 -->

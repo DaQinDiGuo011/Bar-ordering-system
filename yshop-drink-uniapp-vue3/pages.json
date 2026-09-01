@@ -3,7 +3,8 @@
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "首页"
+        "navigationBarTitleText": "首页",
+		"enablePullDownRefresh": true
       }
     },
    
@@ -42,7 +43,7 @@
                 "enablePullDownRefresh": false
             }
             
-        }
+		}
     ],
 	"subPackages": [{
 		"root": "pages/components",
@@ -55,6 +56,13 @@
 				}
 			}, {
 				"path": "pages/pay/pay",
+				"style": {
+					"navigationBarTitleText": "支付",
+					"navigationBarTextStyle": "black",
+					"navigationBarBackgroundColor": "#ffffff"
+				}
+			},  {
+				"path": "pages/pay/cashier",
 				"style": {
 					"navigationBarTitleText": "支付",
 					"navigationBarTextStyle": "black",
@@ -195,7 +203,133 @@
 			        "enablePullDownRefresh": false
 			    }
 			    
-			    }
+				},
+				{
+					"path": "pages/newbalance/newbalance",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/payQrcode/payQrcode",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/balanceLog/balanceLog",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/storageRule/storageRule",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/exchangeCode/exchangeCode",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/exchangeRecord/exchangeRecord",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/recharge/recharge",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/couponRecord/couponRecord",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/myPoint/myPoint",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/pointShop/pointShop",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/pointExchangeRecord/pointExchangeRecord",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/pointRule/pointRule",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/myCouponRecord/myCouponRecord",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/vipCard/vipCard",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/vipOpen/vipOpen",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/contactService/contactService",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/winestoreSubmit/winestoreSubmit",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/winestoreMylist/winestoreMylist",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/privateAgreement/privateAgreement",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/privateProtectGuide/privateProtectGuide",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				},
+				{
+					"path": "pages/pointsLeaderboard/pointsLeaderboard",
+					"style": {
+						"navigationBarTitleText": ""
+					}
+				}
             ]
 	}],
   "globalStyle": {

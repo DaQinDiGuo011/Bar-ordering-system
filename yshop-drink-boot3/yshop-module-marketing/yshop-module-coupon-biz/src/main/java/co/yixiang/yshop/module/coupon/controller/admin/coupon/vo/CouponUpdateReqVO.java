@@ -1,9 +1,10 @@
 package co.yixiang.yshop.module.coupon.controller.admin.coupon.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import java.util.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Schema(description = "管理后台 - 优惠券更新 Request VO")
 @Data
@@ -15,4 +16,7 @@ public class CouponUpdateReqVO extends CouponBaseVO {
     @NotNull(message = "id不能为空")
     private Long id;
 
+    private Long userId;
+
+    private String pwd;
 }

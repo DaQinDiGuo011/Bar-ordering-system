@@ -1,11 +1,10 @@
 package co.yixiang.yshop.module.order.controller.admin.storeorder.vo;
 
-import co.yixiang.yshop.framework.desensitize.core.slider.annotation.MobileDesensitize;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -74,9 +73,9 @@ public class StoreOrderBaseVO {
     //@NotNull(message = "抵扣金额不能为空")
     private BigDecimal deductionPrice;
 
-    @Schema(description = "优惠券id", required = true, example = "3299")
+//    @Schema(description = "优惠券id", required = true, example = "3299")
     //@NotNull(message = "优惠券id不能为空")
-    private Integer couponId;
+//    private Integer couponId;
 
     @Schema(description = "优惠券金额", required = true, example = "22157")
     //@NotNull(message = "优惠券金额不能为空")

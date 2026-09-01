@@ -5,6 +5,7 @@ import co.yixiang.yshop.framework.mq.redis.core.RedisMQTemplate;
 import co.yixiang.yshop.framework.websocket.core.handler.JsonWebSocketMessageHandler;
 import co.yixiang.yshop.framework.websocket.core.listener.WebSocketMessageListener;
 import co.yixiang.yshop.framework.websocket.core.security.LoginUserHandshakeInterceptor;
+import co.yixiang.yshop.framework.websocket.core.security.WebSocketAuthorizeRequestsCustomizer;
 import co.yixiang.yshop.framework.websocket.core.sender.kafka.KafkaWebSocketMessageConsumer;
 import co.yixiang.yshop.framework.websocket.core.sender.kafka.KafkaWebSocketMessageSender;
 import co.yixiang.yshop.framework.websocket.core.sender.local.LocalWebSocketMessageSender;
@@ -74,6 +75,11 @@ public class YshopWebSocketAutoConfiguration {
     @Bean
     public WebSocketSessionManager webSocketSessionManager() {
         return new WebSocketSessionManagerImpl();
+    }
+
+    @Bean
+    public WebSocketAuthorizeRequestsCustomizer webSocketAuthorizeRequestsCustomizer(WebSocketProperties webSocketProperties) {
+        return new WebSocketAuthorizeRequestsCustomizer(webSocketProperties);
     }
 
     // ==================== Sender 相关 ====================

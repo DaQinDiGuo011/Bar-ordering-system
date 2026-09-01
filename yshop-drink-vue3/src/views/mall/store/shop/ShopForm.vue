@@ -19,6 +19,49 @@
       <el-form-item label="门店组图" prop="images">
         <Materials v-model="formData.images" num="5" type="image" />
       </el-form-item>
+
+      <el-form-item label="客户端广告组图" prop="adImageList">
+        <Materials v-model="formData.adImageList" num="5" type="image" />
+      </el-form-item>
+
+      <el-form-item label="Logo图片" prop="logoImage">
+        <Materials v-model="formData.logoImage" num="1" type="image" />
+      </el-form-item>
+      <el-form-item label="优惠券使用数量限制" prop="couponUseNumLimit">
+        <el-input-number v-model="formData.couponUseNumLimit" :min="0" placeholder="0代表不限制" />
+        <span class="ml-8px text-gray-500">0=不限制，填写数字代表单订单最多可用几张券</span>
+      </el-form-item>
+
+      <el-form-item label="优惠券使用额度限制" prop="couponUseAmountLimit">
+        <el-input-number v-model="formData.couponUseAmountLimit" :min="0" :step="0.01" placeholder="0.00代表不限制" />
+        <span class="ml-8px text-gray-500">0.00=不限制，单订单优惠券合计抵扣上限</span>
+      </el-form-item>
+      <el-form-item label="经营内容" prop="businessContent">
+        <el-input v-model="formData.businessContent" type="textarea" rows="3" placeholder="请输入经营内容"/>
+      </el-form-item>
+      <el-form-item label="WiFi信息" prop="wifiInfo">
+        <el-input v-model="formData.wifiInfo" placeholder="WiFi名称"/>
+      </el-form-item>
+      <el-form-item label="WiFi密码" prop="wifiPwd">
+        <el-input v-model="formData.wifiPwd" placeholder="WiFi密码"/>
+      </el-form-item>
+      <el-form-item label="门店营业开始" prop="businessStartStr">
+        <el-time-picker
+          v-model="formData.businessStartStr"
+          format="HH:mm"
+          value-format="HH:mm"
+          placeholder="选择营业开始时间"
+        />
+      </el-form-item>
+      <el-form-item label="门店营业结束" prop="businessEndStr">
+        <el-time-picker
+          v-model="formData.businessEndStr"
+          format="HH:mm"
+          value-format="HH:mm"
+          placeholder="选择营业结束时间"
+        />
+      </el-form-item>
+
       <el-form-item label="营业开始时间" prop="startTime">
         <el-time-picker v-model="formData.startTime" placeholder="选择营业开始时间" />
       </el-form-item>
@@ -104,10 +147,20 @@ const formData = ref({
   mobile: undefined,
   image: undefined,
   images: undefined,
+  adImageList: undefined,
   address: undefined,
   addressMap: undefined,
   lng: undefined,
   lat: undefined,
+
+  // 新增
+  logoImage: undefined,
+  businessContent: undefined,
+  wifiInfo: undefined,
+  wifiPwd: undefined,
+  businessStartStr: undefined,
+  businessEndStr: undefined,
+
   distance: undefined,
   minPrice: undefined,
   deliveryPrice: undefined,
@@ -115,6 +168,8 @@ const formData = ref({
   status: undefined,
   adminId: undefined,
   uniprintId: undefined,
+  couponUseNumLimit: 0,
+  couponUseAmountLimit: 0.00,
   startTime: undefined,
   endTime: undefined
 })
@@ -123,18 +178,19 @@ const formRules = reactive({
   mobile: [{ required: true, message: '店铺电话不能为空', trigger: 'blur' }],
   image: [{ required: true, message: '图片不能为空', trigger: 'blur' }],
   images: [{ required: true, message: '多张图片不能为空', trigger: 'blur' }],
+  adImageList: [{ required: true, message: '广告图片不能为空', trigger: 'blur' }],
   address: [{ required: true, message: '详细地址不能为空', trigger: 'blur' }],
-  addressMap: [{ required: true, message: '地图定位地址不能为空', trigger: 'blur' }],
-  lng: [{ required: true, message: '经度不能为空', trigger: 'blur' }],
-  lat: [{ required: true, message: '纬度不能为空', trigger: 'blur' }],
-  distance: [{ required: true, message: '外卖配送距离,单位为千米。0表示不送外卖不能为空', trigger: 'blur' }],
-  minPrice: [{ required: true, message: '起送价钱不能为空', trigger: 'blur' }],
-  deliveryPrice: [{ required: true, message: '配送价格不能为空', trigger: 'blur' }],
-  notice: [{ required: true, message: '公告不能为空', trigger: 'blur' }],
+  // addressMap: [{ required: true, message: '地图定位地址不能为空', trigger: 'blur' }],
+  // lng: [{ required: true, message: '经度不能为空', trigger: 'blur' }],
+  // lat: [{ required: true, message: '纬度不能为空', trigger: 'blur' }],
+  // distance: [{ required: true, message: '外卖配送距离,单位为千米。0表示不送外卖不能为空', trigger: 'blur' }],
+  // minPrice: [{ required: true, message: '起送价钱不能为空', trigger: 'blur' }],
+  // deliveryPrice: [{ required: true, message: '配送价格不能为空', trigger: 'blur' }],
+  // notice: [{ required: true, message: '公告不能为空', trigger: 'blur' }],
   status: [{ required: true, message: '是否营业:0=否,1=是不能为空', trigger: 'blur' }],
-  adminId: [{ required: true, message: '管理员id不能为空', trigger: 'blur' }],
-  startTime: [{ required: true, message: '营业开始时间不能为空', trigger: 'blur' }],
-  endTime: [{ required: true, message: '营业结束时间不能为空', trigger: 'blur' }]
+  // adminId: [{ required: true, message: '管理员id不能为空', trigger: 'blur' }],
+  businessStartStr: [{ required: true, message: '门店营业开始时间不能为空', trigger: 'blur' }],
+  businessEndStr: [{ required: true, message: '门店营业结束时间不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
 
@@ -226,10 +282,17 @@ const resetForm = () => {
     mobile: undefined,
     image: undefined,
     images: undefined,
+    adImageList: undefined,
     address: undefined,
     addressMap: undefined,
     lng: undefined,
     lat: undefined,
+    logoImage: undefined,
+    businessContent: undefined,
+    wifiInfo: undefined,
+    wifiPwd: undefined,
+    businessStartStr: undefined,
+    businessEndStr: undefined,
     distance: undefined,
     minPrice: undefined,
     deliveryPrice: undefined,
@@ -237,6 +300,8 @@ const resetForm = () => {
     status: 1,
     adminId: undefined,
     uniprintId: undefined,
+    couponUseNumLimit: 0,
+    couponUseAmountLimit: 0.00,
     startTime: undefined,
     endTime: undefined
   }

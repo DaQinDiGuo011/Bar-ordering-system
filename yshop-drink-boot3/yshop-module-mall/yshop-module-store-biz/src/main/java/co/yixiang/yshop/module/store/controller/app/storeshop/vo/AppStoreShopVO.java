@@ -57,6 +57,23 @@ public class AppStoreShopVO {
     @Schema(description = "公告", required = true)
     private String notice;
 
+    @Schema(description = "logo图片")
+    private String logoImage;
+
+    @Schema(description = "经营内容")
+    private String businessContent;
+
+    @Schema(description = "Wifi信息")
+    private String wifiInfo;
+
+    @Schema(description = "Wifi密码")
+    private String wifiPwd;
+
+    @Schema(description = "营业开始时间")
+    private String businessStartStr;
+
+    @Schema(description = "营业结束时间")
+    private String businessEndStr;
 
     @Schema(description = "营业开始时间", required = true)
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
@@ -75,4 +92,13 @@ public class AppStoreShopVO {
     @Schema(description = "是否营业:0=否,1=是", required = true)
     private Integer status;
 
+    @Schema(description = "优惠券使用数量限制，0=不限制")
+    private Integer couponUseNumLimit;
+
+    @Schema(description = "优惠券使用额度限制(单订单总抵扣上限)，0.00=不限制")
+    private BigDecimal couponUseAmountLimit;
+
+    private String clientAdImages;
+
+    private Integer orderUnpayCancelSecond;
 }

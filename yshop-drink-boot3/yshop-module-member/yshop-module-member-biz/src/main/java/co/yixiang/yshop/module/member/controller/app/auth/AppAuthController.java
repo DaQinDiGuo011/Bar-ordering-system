@@ -39,7 +39,6 @@ public class AppAuthController {
     @Value("${yshop.info.isActive}")
     private Boolean isActive;
 
-
     @PostMapping("/login")
     @Operation(summary = "使用手机 + 密码登录")
     public CommonResult<AppAuthLoginRespVO> login(@RequestBody @Valid AppAuthLoginReqVO reqVO) {
@@ -146,5 +145,14 @@ public class AppAuthController {
     }
 
 
+    @PostMapping("/phoneWxLogin")
+    public CommonResult<AppLoginRespVO> phoneLogin(@RequestBody AppWxPhoneLoginVO vo) {
+        return success(authService.loginByVchart(vo));
+    }
+
+    @PostMapping("/loginByUserCode")
+    public CommonResult<AppLoginRespVO> loginByUserCode(@RequestBody AppWxPhoneLoginVO vo) {
+        return success(authService.loginByUserCode(vo));
+    }
 
 }

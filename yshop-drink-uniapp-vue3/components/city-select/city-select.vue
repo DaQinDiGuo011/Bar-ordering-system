@@ -151,7 +151,6 @@ watch(() => props.items, (next) => {
 })
 
 watch(() => props.defaultValue, (next) => {
-  console.log("--> % defaultValue % next:\n", next)
   value.value = `${next.province.name} ${next.city.name} ${next.district.name}`
   setDefaultValue(items.value, next)
 })

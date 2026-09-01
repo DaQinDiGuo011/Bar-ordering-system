@@ -7,16 +7,17 @@ import { isWeixin,parseQuery } from '@/utils/util'
 import cookie from '@/utils/cookie'
 import {
   userAuthSession,
-  wechatAuth
+  wechatAuth,
+  userLoginByUserCode
 } from '@/api/auth'
 import { APP_ID } from '@/config'
 
 onLaunch(() => {
-	console.log('App Launch')
+	
 })
 
 onShow(() => {
-    console.log('App Show')
+    
    
 	// 检查用户登录情况
 	// #ifdef H5
@@ -32,7 +33,7 @@ onShow(() => {
 })
 
 onHide(() => {
-   console.log('App Hide')
+   
 })
 
 
@@ -42,13 +43,18 @@ const wechatMiniLogin = () => {
 	uni.login({
 		provider: 'weixin'
 	}).then(async (res) => {
-		let data = await userAuthSession({
-			code: res.code
+		// let data = await userAuthSession({
+		// 	code: res.code
+		// });
+		let data = await userLoginByUserCode({
+			jsCode: res.code
 		});
 		if (data) {
 			main.SET_OPENID(data.openId)
-			if (data.hasOwnProperty('userInfo') && data.accessToken && data.accessToken != '') {
+			if (data.hasOwnProperty('userInfo')) {
 				main.SET_MEMBER(data.userInfo);
+				main.SET_LOGIN_VALUE_FLAG(true)
+				main.SET_OPENID(data.userInfo.openId)
 				main.SET_TOKEN(data.accessToken);
 			}
 		}
@@ -72,7 +78,7 @@ const oAuth = async() => {
 	  return new Promise((resolve, reject) => {
 		     
 		const accessToken = uni.getStorageSync('accessToken');
-		if (cookie.has('wx_auth') && accessToken && main.isLogin) {
+		if (cookie.has('wx_auth') && accessToken && main.loginValueFlag) {
 		  reject()
 		  return
 		}
@@ -92,7 +98,6 @@ const oAuth = async() => {
 }
 
 const auth = async(code) => {
-	console.log('获取微信授权:',code)
 	let data = await wechatAuth({'code':code})
 	cookie.set('wx_auth', code)
 	if (data) {

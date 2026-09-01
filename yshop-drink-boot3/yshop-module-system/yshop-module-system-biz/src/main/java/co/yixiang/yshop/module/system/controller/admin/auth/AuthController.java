@@ -7,6 +7,7 @@ import co.yixiang.yshop.framework.common.enums.UserTypeEnum;
 import co.yixiang.yshop.framework.common.pojo.CommonResult;
 import co.yixiang.yshop.framework.security.config.SecurityProperties;
 import co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils;
+import co.yixiang.yshop.module.infra.controller.admin.config.WxMiniUtil;
 import co.yixiang.yshop.module.system.controller.admin.auth.vo.*;
 import co.yixiang.yshop.module.system.convert.auth.AuthConvert;
 import co.yixiang.yshop.module.system.dal.dataobject.permission.MenuDO;
@@ -23,15 +24,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -58,7 +64,8 @@ public class AuthController {
     private PermissionService permissionService;
     @Resource
     private SocialClientService socialClientService;
-
+    @Resource
+    private WxMiniUtil wxMiniUtil;
     @Resource
     private SecurityProperties securityProperties;
 
@@ -154,4 +161,34 @@ public class AuthController {
         return success(authService.socialLogin(reqVO));
     }
 
+    @GetMapping(value = "/admin-api/wx/qrcode")
+    public CommonResult<String> genQr(@RequestParam String scene,
+                                        @RequestParam(defaultValue = "pages/menu/menu") String page) throws IOException {
+        byte[] bytes = wxMiniUtil.createUnlimitedQrCode(scene, page);
+        String fileName = saveQrCodeFile(bytes, scene);
+        return success(fileName);
+    }
+
+    private static final String QR_CODE_SAVE_PATH = "/data/yshop/qrcode/";
+
+    private String saveQrCodeFile(byte[] bytes, String scene) throws IOException {
+        // 确保目录存在
+        File dir = new File(QR_CODE_SAVE_PATH);
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw new IOException("创建二维码保存目录失败：" + QR_CODE_SAVE_PATH);
+        }
+
+        // 生成文件名，避免重名
+        String timeStr = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        String fileName = "qr_" + scene + "_" + timeStr + ".png";
+
+        File file = new File(dir, fileName);
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(bytes);
+            fos.flush();
+        }
+
+        return fileName;
+    }
 }

@@ -3,9 +3,9 @@ package co.yixiang.yshop.module.member.service.user;
 import co.yixiang.yshop.framework.common.validation.Mobile;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppUserQueryVo;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppUserUpdateMobileReqVO;
+import co.yixiang.yshop.module.member.controller.app.user.vo.TopPointsVO;
 import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -27,6 +27,8 @@ public interface MemberUserService extends IService<MemberUserDO> {
      * @return 用户对象
      */
     MemberUserDO getUserByMobile(String mobile);
+
+    MemberUserDO getUserByUserCode(String userCode);
 
     /**
      * 基于用户昵称，模糊匹配用户列表
@@ -62,6 +64,7 @@ public interface MemberUserService extends IService<MemberUserDO> {
      */
     MemberUserDO getUser(Long id);
 
+    List<TopPointsVO> getTop50Rank();
     /**
      * 通过用户 ID 查询用户
      *

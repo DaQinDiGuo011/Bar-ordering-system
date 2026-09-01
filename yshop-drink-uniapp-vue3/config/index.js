@@ -1,14 +1,16 @@
-const DEV_API_URL = 'http://localhost:48081/app-api'
-const PROD_API_URL = 'https://apidc.yixiang.co/app-api'
+const DEV_API_URL = 'http://127.0.0.1:48081/app-api'
+// const PROD_API_URL = 'http://8.138.222.167:48081/app-api'
+const PROD_API_URL = 'https://theonebar-dwjg.com/app-api'
+// const PROD_API_URL = 'http://127.0.0.1:48081/app-api'
 
 // #ifdef APP-PLUS || H5 || MP-WEIXIN
 export const VUE_APP_API_URL =
-  process.env.NODE_ENV === 'development' ? DEV_API_URL : PROD_API_URL
+  process.env.NODE_ENV === 'development' ? PROD_API_URL:DEV_API_URL
 // #endif
 
 export const VUE_APP_RESOURCES_URL = 'https://h5.yixiang.co/static'
 export const VUE_APP_UPLOAD_URL = VUE_APP_API_URL + '/infra/file/upload'
-export const APP_ID = 'wxdbdbc123c8c30b45'
+export const APP_ID = 'wx731529eecec1ddf7'
 
 const orderListStatus = {}
 
@@ -17,6 +19,7 @@ const orderListStatus = {}
 // 0:待发货；
 // 1:待收货；
 // 2:已收货；
+// 3:待评价；
 // 3:待评价；
 // -1:已退款
 

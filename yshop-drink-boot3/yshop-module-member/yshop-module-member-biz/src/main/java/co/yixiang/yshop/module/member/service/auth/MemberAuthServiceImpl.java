@@ -10,6 +10,11 @@ import co.yixiang.yshop.framework.common.enums.CommonStatusEnum;
 import co.yixiang.yshop.framework.common.enums.UserTypeEnum;
 import co.yixiang.yshop.framework.common.util.monitor.TracerUtils;
 import co.yixiang.yshop.framework.common.util.servlet.ServletUtils;
+import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
+import co.yixiang.yshop.module.coupon.dal.dataobject.couponuser.CouponUserDO;
+import co.yixiang.yshop.module.coupon.enums.CouponStatusEnum;
+import co.yixiang.yshop.module.coupon.service.couponuser.AppCouponUserServiceImpl;
+import co.yixiang.yshop.module.infra.controller.admin.config.WxMiniUtil;
 import co.yixiang.yshop.module.member.controller.app.auth.vo.*;
 import co.yixiang.yshop.module.member.convert.auth.AuthConvert;
 import co.yixiang.yshop.module.member.convert.user.UserConvert;
@@ -31,6 +36,8 @@ import co.yixiang.yshop.module.system.enums.logger.LoginResultEnum;
 import co.yixiang.yshop.module.system.enums.oauth2.OAuth2ClientConstants;
 import co.yixiang.yshop.module.system.enums.sms.SmsSceneEnum;
 import co.yixiang.yshop.module.system.enums.social.SocialTypeEnum;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.annotations.VisibleForTesting;
 import jakarta.annotation.Resource;
@@ -39,10 +46,14 @@ import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Objects;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
@@ -80,6 +91,10 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private MemberUserMapper userMapper;
     @Resource
     private MiniRedisDAO miniRedisDAO;
+    @Resource
+    private WxMiniUtil wxMiniUtil;
+    @Resource
+    private AppCouponUserServiceImpl couponUserService;
 
     @Override
     public AppAuthLoginRespVO login(AppAuthLoginReqVO reqVO) {
@@ -414,6 +429,182 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     public AppAuthLoginRespVO refreshToken(String refreshToken) {
         OAuth2AccessTokenRespDTO accessTokenDO = oauth2TokenApi.refreshAccessToken(refreshToken, OAuth2ClientConstants.CLIENT_ID_DEFAULT);
         return AuthConvert.INSTANCE.convert(accessTokenDO);
+    }
+
+    @Override
+    public AppLoginRespVO loginByVchart(AppWxPhoneLoginVO loginVO) {
+        AppLoginRespVO respVO = new AppLoginRespVO();
+        try {
+            if (StrUtil.isBlank(loginVO.getPhoneCode())) {
+                respVO.setErrcode(400);
+                respVO.setErrmsg("缺少phoneCode");
+                return respVO;
+            }
+            // 1. 请求微信获取手机号
+            String phoneDto = wxMiniUtil.getUserPhone(loginVO.getPhoneCode());
+            log.info("调用微信查询手机号返回：{}",phoneDto);
+            Map<String, Object> mapResult = JSON.parseObject(phoneDto, Map.class);
+            if ((Integer)mapResult.get("errcode") != 0) {
+                respVO.setErrcode(400);
+                respVO.setErrmsg("获取手机号失败：" + mapResult.get("errmsg"));
+                return respVO;
+            }
+            JSONObject phoneInfo = (JSONObject) mapResult.get("phone_info");
+            if(phoneInfo == null){
+                respVO.setErrcode(400);
+                respVO.setErrmsg("获取手机号失败：获取手机信息为空");
+                return respVO;
+            }
+            String phoneNumber = phoneInfo.getString("phoneNumber");
+            String purePhoneNumber = phoneInfo.getString("purePhoneNumber");
+            String countryCode = phoneInfo.getString("countryCode");
+
+            // 2. 根据jsCode拿到openid（可选，用于唯一标识用户）
+            String sessionStr = wxMiniUtil.getOpenId(loginVO.getJsCode());
+            Map<String, Object> sessionMap = JSON.parseObject(sessionStr);
+            String openid = (String) sessionMap.get("openid");
+            if (StrUtil.isBlank(openid)) {
+                respVO.setErrcode(400);
+                respVO.setErrmsg("jsCode失效");
+                return respVO;
+            }
+
+            // ======================
+            // 3. 你的业务逻辑
+            // 根据phone / openid 查询用户，不存在则自动注册
+            // 生成token返回前端
+            // ======================
+            // User user = userService.loginOrRegister(phone, openid, vo.getNickname(), vo.getAvatar());
+            // String token = jwtUtil.generateToken(user.getId());
+
+            MemberUserDO memberUserDO = userMapper.selectByMobile(phoneNumber);
+            if (memberUserDO == null) {
+                memberUserDO = new MemberUserDO();
+                memberUserDO.setNickname(loginVO.getNickname());
+                memberUserDO.setUsername(loginVO.getNickname());
+                memberUserDO.setMobile(phoneNumber);
+                memberUserDO.setStatus(CommonStatusEnum.ENABLE.getStatus()); // 默认开启
+                memberUserDO.setRegisterIp(getClientIP());
+                memberUserDO.setLoginType(LoginTypeEnum.ROUNTINE.getValue());
+                memberUserDO.setAvatar(loginVO.getAvatar());
+                memberUserDO.setLoginDate(LocalDateTime.now());
+                memberUserDO.setCreateTime(LocalDateTime.now());
+                memberUserDO.setOpenid(openid);
+                memberUserDO.setIntegral(0);
+                memberUserDO.setNowMoney(new BigDecimal(0));
+                userMapper.insert(memberUserDO);
+            }else{
+                memberUserDO.setNickname(loginVO.getNickname());
+                memberUserDO.setUsername(loginVO.getNickname());
+                memberUserDO.setMobile(phoneNumber);
+                memberUserDO.setRegisterIp(getClientIP());
+                memberUserDO.setLoginType(LoginTypeEnum.ROUNTINE.getValue());
+                memberUserDO.setOpenid(openid);
+                memberUserDO.setAvatar(loginVO.getAvatar());
+                memberUserDO.setLoginDate(LocalDateTime.now());
+                userMapper.updateById(memberUserDO);
+
+                memberUserDO = userMapper.selectByMobile(phoneNumber);
+
+            }
+
+            AppAuthLoginRespVO appAuthLoginRespVO = createTokenAfterLoginSuccess(memberUserDO, memberUserDO.getNickname(),
+                    LoginLogTypeEnum.LOGIN_SOCIAL);
+            // 模拟返回
+            AppLoginRespVO.UserInfo userInfo = new AppLoginRespVO.UserInfo();
+            // data.put("token", token);
+
+            respVO.setErrcode(200);
+            respVO.setErrmsg("success");
+            respVO.setIsActive(appAuthLoginRespVO.getIsActive());
+            respVO.setExpiresTime(appAuthLoginRespVO.getExpiresTime());
+            respVO.setAccessToken(appAuthLoginRespVO.getAccessToken());
+            respVO.setRefreshToken(appAuthLoginRespVO.getRefreshToken());
+
+            userInfo.setPhoneNumber(phoneNumber);
+            userInfo.setIntegral(memberUserDO.getIntegral());
+            userInfo.setNowMoney(memberUserDO.getNowMoney());
+            userInfo.setOpenId(memberUserDO.getOpenid());
+            userInfo.setAvatar(memberUserDO.getAvatar());
+            userInfo.setNickname(memberUserDO.getNickname());
+            userInfo.setIntegral(memberUserDO.getIntegral());
+            userInfo.setNowMoney(memberUserDO.getNowMoney());
+            userInfo.setCouponNum(0);
+            respVO.setUserInfo(userInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            respVO.setErrcode(500);
+            respVO.setErrmsg("登录异常");
+        }
+        return respVO;
+    }
+
+    @Override
+    public AppLoginRespVO loginByUserCode(AppWxPhoneLoginVO loginVO) {
+        String jsCode = loginVO.getJsCode();
+        log.info("preferIPv4Stack = {}", System.getProperty("java.net.preferIPv4Stack"));
+
+        if(StringUtils.isBlank(jsCode)){
+            return null;
+        }
+//        WxOAuth2AccessToken wxMpOAuth2AccessToken = null;
+//        try {
+//            wxMpOAuth2AccessToken = mpService.getOAuth2Service().getAccessToken(jsCode);
+//            WxOAuth2UserInfo wxMpUser = mpService.getOAuth2Service().getUserInfo(wxMpOAuth2AccessToken, null);
+//            String openid = wxMpUser.getOpenid();
+//
+//        }catch (WxErrorException e) {
+//            log.error(e.getMessage());
+//            throw exception(MINI_AUTH_LOGIN_BAD);
+//        }
+
+        String phoneDto = wxMiniUtil.getUserOpenidByCode(jsCode);
+        log.info("调用微信返回phoneDto = {}", phoneDto);
+        log.info("微信jscode2session返回结果：{}",phoneDto);
+
+        AppLoginRespVO respVO = new AppLoginRespVO();
+
+        Map<String, Object> sessionMap = JSON.parseObject(phoneDto);
+        String openid = (String) sessionMap.get("openid");
+        if (StrUtil.isBlank(openid)) {
+            respVO.setErrcode(400);
+            respVO.setErrmsg("jsCode失效");
+            return respVO;
+        }
+
+        MemberUserDO userDO = userService.getUserByUserCode(openid);
+
+        if(userDO == null){
+            return null;
+        }
+
+        LambdaQueryWrapperX<CouponUserDO> wrappers = new LambdaQueryWrapperX<>();
+        wrappers.eq(CouponUserDO::getUserId,userDO.getId())
+                .eq(CouponUserDO::getStatus, CouponStatusEnum.STATUS_0);
+
+        long number = couponUserService.count(wrappers);
+
+        AppAuthLoginRespVO appAuthLoginRespVO = createTokenAfterLoginSuccess(userDO, userDO.getNickname(),
+                LoginLogTypeEnum.LOGIN_SOCIAL);
+
+        respVO.setIsActive(appAuthLoginRespVO.getIsActive());
+        respVO.setExpiresTime(appAuthLoginRespVO.getExpiresTime());
+        respVO.setAccessToken(appAuthLoginRespVO.getAccessToken());
+        respVO.setRefreshToken(appAuthLoginRespVO.getRefreshToken());
+
+        AppLoginRespVO.UserInfo userInfo = new AppLoginRespVO.UserInfo();
+
+        userInfo.setPhoneNumber(userDO.getMobile());
+        userInfo.setRealName(userDO.getRealName());
+        userInfo.setOpenId(userDO.getOpenid());
+        userInfo.setAvatar(userDO.getAvatar());
+        userInfo.setNickname(userDO.getNickname());
+        userInfo.setIntegral(userDO.getIntegral());
+        userInfo.setNowMoney(userDO.getNowMoney());
+        userInfo.setCouponNum((int) number);
+        userInfo.setId(userDO.getId());
+        respVO.setUserInfo(userInfo);
+        return respVO;
     }
 
     /**

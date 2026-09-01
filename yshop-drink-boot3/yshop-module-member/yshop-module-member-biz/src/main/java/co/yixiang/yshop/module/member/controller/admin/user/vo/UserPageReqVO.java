@@ -1,10 +1,12 @@
 package co.yixiang.yshop.module.member.controller.admin.user.vo;
 
-import lombok.*;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 import co.yixiang.yshop.framework.common.pojo.PageParam;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
+
 import java.time.LocalDateTime;
 
 import static co.yixiang.yshop.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -26,8 +28,6 @@ public class UserPageReqVO extends PageParam {
 
     @Schema(description = "手机号码")
     private String mobile;
-
-    private String phone;
 
     @Schema(description = "添加时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)

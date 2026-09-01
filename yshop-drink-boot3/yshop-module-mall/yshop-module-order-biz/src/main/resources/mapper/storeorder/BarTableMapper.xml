@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.yixiang.yshop.module.order.dal.mysql.storeorder.BarTableMapper">
+    <select id="selectAll" resultType="BarTableDO">
+        select id,table_name tableName,create_time createTime from bar_table
+    </select>
+    <select id="selectById" resultType="BarTableDO">
+        select id,table_name tableName,create_time createTime from bar_table where id=#{id}
+    </select>
+    <select id="selectReservedTableId" resultType="Long">
+        select distinct table_id from reserve_order
+        where reserve_date=#{date} and status=1
+    </select>
+</mapper>

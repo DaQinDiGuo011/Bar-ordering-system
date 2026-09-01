@@ -21,17 +21,18 @@
         </el-select>
       </el-form-item>
       <el-form-item label="可用类型" prop="type">
-        <el-radio-group v-model="formData.type">
-          <el-radio :label="0">通用</el-radio>
-          <el-radio :label="1">自取</el-radio>
-          <el-radio :label="2">外卖</el-radio>
+        <el-radio-group v-model="formData.type" @change="changeType">
+          <el-radio :value="1" label="通用" />
+          <el-radio :value="2" label="自取" />
+          <el-radio :value="3" label="外卖" />
+          <el-radio :value="4" label="一人一券" />
         </el-radio-group>
       </el-form-item>
       <el-form-item label="兑换码" prop="exchangeCode">
-        <el-input v-model="formData.exchangeCode" placeholder="请输入兑换码" />
+        <el-input v-model="formData.exchangeCode" placeholder="请输入兑换码" disabled/>
       </el-form-item>
       <el-form-item label="图片" prop="image">
-          <Materials v-model="formData.image" num="1" type="image" />
+          <Materials v-model="formData.image" :num="1" type="image" />
       </el-form-item>
       <el-form-item label="优惠券名称" prop="title">
         <el-input v-model="formData.title" placeholder="请输入优惠券名称" />
@@ -65,15 +66,15 @@
         <el-input v-model="formData.score" placeholder="请输入所需积分" />
       </el-form-item>
       <el-form-item label="限领数量" prop="limit">
-        <el-input v-model="formData.limit" placeholder="请输入限领数量" />
+        <el-input v-model="formData.limit" placeholder="请输入限领数量" :disabled="formData.type ==4"/>
       </el-form-item>
       <el-form-item label="使用说明" prop="instructions">
-        <el-input type="textarea" rows="5"  v-model="formData.instructions" placeholder="请输入使用说明" />
+        <el-input type="textarea" :rows="5"  v-model="formData.instructions" placeholder="请输入使用说明" />
       </el-form-item>
       <el-form-item label="是否上架" prop="isSwitch">
         <el-radio-group v-model="formData.isSwitch">
-          <el-radio :label="1">是</el-radio>
-          <el-radio :label="0">否</el-radio>
+          <el-radio :value="1" label="是" />
+          <el-radio :value="0" label="否" />
         </el-radio-group>
       </el-form-item>
     </el-form>
@@ -109,9 +110,9 @@ const formData = ref({
   exchangeCode: undefined,
   receive: undefined,
   distribute: undefined,
-  score: undefined,
+  score: 0,
   instructions: undefined,
-  image: undefined,
+  image: [],
   limit: undefined
 })
 const shopList = ref([])
@@ -128,7 +129,10 @@ const formRules = reactive({
   instructions: [{ required: true, message: '使用说明不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
-
+const changeType = (val)=>{
+  console.log("------val=",val)
+  formData.value.limit = 1
+}
 /** 打开弹窗 */
 const open = async (type: string, id?: number) => {
   dialogVisible.value = true
@@ -142,6 +146,11 @@ const open = async (type: string, id?: number) => {
     try {
       formData.value = await Api.getCoupon(id)
       formData.value.shopId = Number(formData.value.shopId)
+      if (formData.value.image) {
+        formData.value.image = formData.value.image
+      } else {
+        formData.value.image = []
+      }
     } finally {
       formLoading.value = false
     }
@@ -159,7 +168,10 @@ const submitForm = async () => {
   // 提交请求
   formLoading.value = true
   try {
-    const data = formData.value as unknown as Api.VO
+    // const data = formData.value as unknown as Api.VO
+    const data = { ...formData.value }
+    // 数组转字符串传给后端
+    data.image = data.image?.length ? data.image[0] : ''
     if (formType.value === 'create') {
       await Api.createCoupon(data)
       message.success(t('common.createSuccess'))
@@ -178,7 +190,9 @@ const getList = async () => {
   try {
     const data = await ShopApi.getShopList()
     shopList.value = data
-
+    if(data.length > 0){
+      formData.value.shopId = data[0].id
+    }
   } finally {
     
   }
@@ -200,9 +214,9 @@ const resetForm = () => {
     exchangeCode: undefined,
     receive: undefined,
     distribute: undefined,
-    score: undefined,
+    score: 0,
     instructions: undefined,
-    image: undefined,
+    image: [],
     limit: undefined
   }
   formRef.value?.resetFields()

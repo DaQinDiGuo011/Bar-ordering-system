@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.yixiang.yshop.module.member.dal.mysql.user.RechargePackageMapper">
+    <select id="selectById" resultType="co.yixiang.yshop.module.member.dal.dataobject.user.RechargePackageDO">
+        select * from recharge_package where id = #{id}
+    </select>
+    <select id="selectEnableList" resultType="co.yixiang.yshop.module.member.dal.dataobject.user.RechargePackageDO">
+        select * from recharge_package where status = 1 order by sort asc
+    </select>
+</mapper>

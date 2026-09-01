@@ -1,13 +1,16 @@
 package co.yixiang.yshop.module.message.service.wechattemplate;
 
-import java.util.*;
-import jakarta.validation.*;
-
-import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
-import co.yixiang.yshop.module.message.controller.admin.wechattemplate.vo.*;
-import co.yixiang.yshop.module.message.dal.dataobject.wechattemplate.WechatTemplateDO;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
+import co.yixiang.yshop.module.message.controller.admin.wechattemplate.vo.WechatTemplateCreateReqVO;
+import co.yixiang.yshop.module.message.controller.admin.wechattemplate.vo.WechatTemplateExportReqVO;
+import co.yixiang.yshop.module.message.controller.admin.wechattemplate.vo.WechatTemplatePageReqVO;
+import co.yixiang.yshop.module.message.controller.admin.wechattemplate.vo.WechatTemplateUpdateReqVO;
+import co.yixiang.yshop.module.message.dal.dataobject.wechattemplate.WechatTemplateDO;
 import com.baomidou.mybatisplus.extension.service.IService;
+import jakarta.validation.Valid;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 微信模板 Service 接口

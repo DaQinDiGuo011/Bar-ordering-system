@@ -1,9 +1,9 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
-	  @leftClick="$onClickLeft"
+	   :fixed="true"
+		bgColor="#ffffff"
+		:title="title"
+		:placeholder="true"
 	/>
 	<view class="container order-page">
 		<view class="bg-white">
@@ -40,6 +40,9 @@
 						<view class="d-flex justify-content-between align-items-center order-item__meta">
 							<view class="font-size-sm text-color-assist">
 								{{formatDateTime(item.createTime) }}
+								<view v-if="item.paid === 0 && item.countdown > 0" class="countdown-text">
+								    {{formatCountdown(item.countdown)}} 后自动取消
+								</view>
 							</view>
 							<view class="d-flex font-size-sm text-color-base align-items-center">
 								<view class="order-item__summary">共{{ goodsNum(item.cartInfo) }}件商品，实付</view>
@@ -47,20 +50,47 @@
 							</view>
 						</view>
 						<view class="d-flex align-items-center justify-content-end order-item__actions">
-							<button
+							<!-- <button
 								v-if="item.paid > 0 && item.status < 2 && item.refundStatus == 0"
 								class="order-item__btn"
 								plain
 								size="mini"
 								@tap.stop="receive(item)"
-							>确认收到餐</button>
-							<button class="order-item__btn" plain size="mini" @tap="detail(item.orderId)">订单详情</button>
+							>确认收到餐</button> -->
+							<button
+									v-if="item.paid === 0"
+									class="order-item__btn" 
+									plain 
+									size="mini" 
+									@tap.stop="cancelPayFnt(item.orderId)"
+								>取消支付</button>
+							<button 
+									v-if="item.paid === 0"
+									class="order-item__btn" 
+									plain 
+									size="mini" 
+									@tap.stop="payOrder(item.orderId)"
+								>继续支付</button>
+							<button v-if="item.paid !== 0" class="order-item__btn" plain size="mini" @tap="detail(item.orderId)">订单详情</button>
 						</view>
 					</view>
 				</list-cell>
 			</view>
 		</view>
 		<uv-empty v-if="orders.length == 0" mode="order"></uv-empty>
+		
+		<uv-popup ref="loginPopup"
+			mode="bottom"
+			border-radius="24rpx"
+			duration="600"
+			mask-close-able
+			:round="20"
+			:closeOnClickOverlay="true"
+			:safeAreaInsetBottom="false"
+			z-index="9910"
+			teleport>
+			<login @close="closeLogin"></login>
+		</uv-popup>
 	</view>
 </template>
 
@@ -68,19 +98,25 @@
 <script setup>
 import {
   ref,
-  computed
+  computed,
+  nextTick,
+  onUnmounted
 } from 'vue'
 import { useMainStore } from '@/store/store'
 import { storeToRefs } from 'pinia'
-import { onLoad,onPullDownRefresh,onReachBottom} from '@dcloudio/uni-app'
+import { onLoad,onPullDownRefresh,onReachBottom, onShow} from '@dcloudio/uni-app'
 import { formatDateTime,kmUnit } from '@/utils/util'
 import {
   orderGetOrders,
-  orderReceive
+  orderReceive,
+  cancelPay
 } from '@/api/order'
+import login from '@/pages/login/login.vue'
+
 const main = useMainStore()
-const { isLogin } = storeToRefs(main)
+const { loginValueFlag,store } = storeToRefs(main)
 const title = ref('我的订单')
+const loginPopup = ref(null)
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -105,6 +141,67 @@ const tabList = ref([{
 const current = ref(0)
 const type = ref(-1)
 
+/** 订单未支付超时时间 单位秒 10分钟=600秒 */
+const ORDER_PAY_EXPIRE_SEC = ref(0)
+// 存储每个订单定时器id
+const timerMap = ref(new Map())
+
+const formatCountdown = (seconds) => {
+  const m = Math.floor(seconds / 60).toString().padStart(2,'0')
+  const s = Math.floor(seconds % 60).toString().padStart(2,'0')
+  return `${m}:${s}`
+}
+
+const startOrderCountDown = (orderItem) => {
+  // 清除旧定时器
+  if(timerMap.value.has(orderItem.orderId)){
+    clearInterval(timerMap.value.get(orderItem.orderId))
+    timerMap.value.delete(orderItem.orderId)
+  }
+  //计算已经过去多少秒
+  const createTs = new Date(orderItem.createTime).getTime()
+  const nowTs = Date.now()
+  const pastSec = Math.floor((nowTs - createTs)/1000)
+  let remainSec = ORDER_PAY_EXPIRE_SEC.value - pastSec
+  if(remainSec < 0) remainSec = 0
+  orderItem.countdown = remainSec
+
+  if(remainSec <=0){
+    //已经超时，直接刷新列表
+    getOrders(true)
+    return
+  }
+
+  const timer = setInterval(()=>{
+    orderItem.countdown -=1
+    if(orderItem.countdown <=0){
+      clearInterval(timer)
+      timerMap.value.delete(orderItem.orderId)
+      //倒计时结束，刷新订单
+      getOrders(true)
+    }
+  },1000)
+  timerMap.value.set(orderItem.orderId,timer)
+}
+
+/** 清除全部订单定时器 */
+const clearAllTimer = ()=>{
+  for(let [id,timer] of timerMap.value){
+    clearInterval(timer)
+  }
+  timerMap.value.clear()
+}
+
+//页面销毁清除定时器
+onUnmounted(()=>{
+  clearAllTimer()
+})
+
+const closeLogin = ()=> {
+	nextTick(()=>{
+		loginPopup.value.close()
+	})
+}
 const goodsNum = computed(() => { //计算单个饮品添加到购物车的数量
 	return (goods) => {
 		let num = 0;
@@ -112,14 +209,35 @@ const goodsNum = computed(() => { //计算单个饮品添加到购物车的数�
 		return num;
 	}
 })
-onLoad(() => {
-	if(!isLogin.value) {
-		uni.navigateTo({url: '/pages/components/pages/login/login'})
+const cancelPayFnt = async(orderId) => {
+	const confirm = await uni.showModal({title:'提示',content:`确定取消订单吗`})
+	if(confirm.confirm){
+		await cancelPay({id: orderId})
+						
+		getOrders(true)
 	}
-	getOrders(false)
+}
+const payOrder = (orderId) => {
+	uni.navigateTo({
+		url: '/pages/components/pages/pay/pay?orderId=' + orderId
+	})
+}
+onShow(()=>{
+	console.log("-------teime==",store.value.orderUnpayCancelSecond)
+	if(store.value.orderUnpayCancelSecond){
+		ORDER_PAY_EXPIRE_SEC.value = store.value.orderUnpayCancelSecond
+	}
+	if(!loginValueFlag.value) {
+		nextTick(()=>{
+			loginPopup.value.open()
+	})
+	}else{
+		getOrders(true)
+	}
 })
 onPullDownRefresh(() => {
-	 getOrders(false)
+	// current.value = -1
+	getOrders(true)
 })
 onReachBottom(() => {
 	getOrders(false)
@@ -127,8 +245,6 @@ onReachBottom(() => {
 
 // tab栏切换
 const change = (e) => {
-	//console.log('e;',e.type)
-	//console.log('e.index;',e.index)
 	type.value = e.type
 	getOrders(true)
 }
@@ -138,14 +254,19 @@ const getOrders = async(isRefresh = false) => {
 		title: '加载中'
 	})
 	if(isRefresh) {
+		clearAllTimer()
 		orders.value = []
 		page.value = 1
 	}
 	let ordersData = await orderGetOrders({page:page.value, limit:pageSize.value,type:type.value});
-
-	if(ordersData) {
+	if(ordersData && ordersData.length > 0) {
 		orders.value = orders.value.concat(ordersData)
 		page.value += 1
+		orders.value.forEach(item=>{
+		    if(item.paid === 0){
+				startOrderCountDown(item)
+		    }
+		})
 	}
 	uni.stopPullDownRefresh();
 	uni.hideLoading()
@@ -216,5 +337,10 @@ $order-thumb-radius: 8rpx;
 	&__btn + &__btn {
 		margin-left: $order-btn-gap;
 	}
+}
+.countdown-text{
+  margin-left:20rpx;
+  color:#f56c6c;
+  font-weight: bolder;
 }
 </style>

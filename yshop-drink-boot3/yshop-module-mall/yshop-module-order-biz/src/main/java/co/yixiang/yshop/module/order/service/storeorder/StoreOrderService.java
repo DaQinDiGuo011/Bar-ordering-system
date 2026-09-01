@@ -1,11 +1,13 @@
 package co.yixiang.yshop.module.order.service.storeorder;
 
-import java.math.BigDecimal;
-import java.util.*;
-import jakarta.validation.*;
+import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.*;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
-import co.yixiang.yshop.framework.common.pojo.PageResult;
+import jakarta.validation.Valid;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 订单 Service 接口
@@ -51,6 +53,16 @@ public interface StoreOrderService {
     void takeStoreOrder(Long id);
 
     /**
+     * 制作中
+     * @param id
+     */
+    void orderConfirm(Long id);
+
+    /**
+     * 配送中
+     */
+    void pendingReceipt(Long id);
+    /**
      * 获得订单
      *
      * @param id 编号
@@ -74,6 +86,8 @@ public interface StoreOrderService {
      */
     PageResult<StoreOrderRespVO> getStoreOrderPage(StoreOrderPageReqVO pageReqVO);
 
+    PageResult<StoreOrderRespVO> getWorkStoreOrderPage(StoreOrderPageReqVO pageReqVO);
+
     /**
      * 获得订单列表, 用于 Excel 导出
      *
@@ -92,6 +106,7 @@ public interface StoreOrderService {
      */
     void orderRefund(Long id, BigDecimal price, Integer type, Long salesId);
 
+    void reRefund(Long id, String msg, Long uid);
     /**
      * 订单30s内通知
      * @return

@@ -48,16 +48,18 @@
         <el-descriptions-item label="门店">{{ DetailData.shopName }}</el-descriptions-item>
         <el-descriptions-item label="取餐号">{{ DetailData.numberId }}</el-descriptions-item>
         <el-descriptions-item label="桌位号">{{ DetailData.deskNumber ? DetailData.deskNumber : '无' }}</el-descriptions-item>
-        <el-descriptions-item label="就餐人数">{{ DetailData.deskPeople ? DetailData.deskPeople : '无' }}</el-descriptions-item>
+        <el-descriptions-item label="客户">{{ DetailData.userRespVO?.nickname }}</el-descriptions-item>
         <el-descriptions-item label="订单号">{{ DetailData.orderId }}</el-descriptions-item>
         <el-descriptions-item label="订单状态">{{ DetailData.statusStr }}</el-descriptions-item>
         <el-descriptions-item label="商品总数">{{ DetailData.totalNum }}</el-descriptions-item>
         <el-descriptions-item label="商品总价">{{ DetailData.totalPrice }}</el-descriptions-item>
-        <el-descriptions-item label="支付邮费">{{ DetailData.payPostage }}</el-descriptions-item>
+        <!-- <el-descriptions-item label="支付邮费">{{ DetailData.payPostage }}</el-descriptions-item> -->
         <el-descriptions-item label="优惠券金额">{{ DetailData.couponPrice }}</el-descriptions-item>
-        <el-descriptions-item label="积分抵扣">{{ DetailData.useIntegral }}</el-descriptions-item>
+        <!-- <el-descriptions-item label="积分抵扣">{{ DetailData.useIntegral }}</el-descriptions-item> -->
         <el-descriptions-item label="实际支付">{{ DetailData.payPrice }}</el-descriptions-item>
-        <el-descriptions-item label="赠送积分">{{ DetailData.gainIntegral }}</el-descriptions-item>
+        <el-descriptions-item v-if="DetailData.refundStatus == 3" label="拒绝退款原因">{{ DetailData.refundReason }}</el-descriptions-item>
+
+        <!-- <el-descriptions-item label="赠送积分">{{ DetailData.gainIntegral }}</el-descriptions-item> -->
         <el-descriptions-item label="创建时间">{{ formatDate(DetailData.createTime)}}</el-descriptions-item>
         <el-descriptions-item label="支付时间">{{ formatDate(DetailData.payTime) }}</el-descriptions-item>
         <el-descriptions-item label="支付方式">

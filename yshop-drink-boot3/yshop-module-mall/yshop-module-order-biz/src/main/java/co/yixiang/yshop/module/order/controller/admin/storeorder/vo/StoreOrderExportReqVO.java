@@ -1,13 +1,12 @@
 package co.yixiang.yshop.module.order.controller.admin.storeorder.vo;
 
-import lombok.*;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
-import co.yixiang.yshop.framework.common.pojo.PageParam;
 import java.time.LocalDateTime;
-import org.springframework.format.annotation.DateTimeFormat;
+import java.util.List;
 
 import static co.yixiang.yshop.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
 
@@ -58,7 +57,7 @@ public class StoreOrderExportReqVO {
     private BigDecimal deductionPrice;
 
     @Schema(description = "优惠券id", example = "3299")
-    private Integer couponId;
+    private List<String> couponIdList;
 
     @Schema(description = "优惠券金额", example = "22157")
     private BigDecimal couponPrice;

@@ -5,6 +5,7 @@ import co.yixiang.yshop.framework.websocket.config.WebSocketProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * WebSocket 的权限自定义
@@ -18,7 +19,7 @@ public class WebSocketAuthorizeRequestsCustomizer extends AuthorizeRequestsCusto
 
     @Override
     public void customize(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
-        registry.requestMatchers(webSocketProperties.getPath()).permitAll();
+        registry.requestMatchers(new AntPathRequestMatcher(webSocketProperties.getPath())).permitAll();
     }
 
 }

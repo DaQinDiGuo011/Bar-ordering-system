@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+		:fixed="true"
+		bgColor="#ffffff"
+		:title="title"
+		left-arrow
+		:placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="shop-page">

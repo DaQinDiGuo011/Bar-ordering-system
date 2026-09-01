@@ -1,11 +1,10 @@
 package co.yixiang.yshop.module.order.controller.admin.storeorder.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @Schema(description = "管理后台 - 订单退款 Request VO")
@@ -18,7 +17,11 @@ public class StoreOrderRefundVO {
     private Long id;
 
     @Schema(description = "退款金额", required = true, example = "31716")
-    @NotNull(message = "退款金额不能为空")
+//    @NotNull(message = "退款金额不能为空")
     private BigDecimal payPrice;
+
+    private String pwd;
+
+    private String refuseReason;
 
 }

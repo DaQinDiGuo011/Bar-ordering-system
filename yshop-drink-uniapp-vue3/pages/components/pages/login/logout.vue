@@ -1,9 +1,11 @@
 <template>
 	<!-- <layout> -->
 		<uv-navbar
-		  :fixed="false"
-		  :title="title"
-		  left-arrow
+		  :fixed="true"
+		  	  bgColor="#ffffff"
+		  	  :title="title"
+		  	  left-arrow
+		  	  :placeholder="true"
 		  @leftClick="$onClickLeft"
 		/>
 		<view class="logout-page">
@@ -22,7 +24,7 @@ import {
 import { useMainStore } from '@/store/store'
 import { storeToRefs } from 'pinia'
 const main = useMainStore()
-const { member,isLogin } = storeToRefs(main)
+const { member } = storeToRefs(main)
 const uToast = ref()
 const title = ref('退出')
 

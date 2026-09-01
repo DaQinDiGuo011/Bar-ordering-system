@@ -9,9 +9,10 @@
       <el-radio-group v-model="orderStatus" size="large"  fill="#DC143C" @change="queryOrderStatus">
         <el-radio-button label="">全部</el-radio-button>
         <el-radio-button label="0">未支付</el-radio-button>
-        <el-radio-button label="1">制作中</el-radio-button>
-        <el-radio-button label="2">待收货</el-radio-button>
-        <el-radio-button label="4">已收货/已取餐</el-radio-button>
+        <el-radio-button label="1">待出单</el-radio-button>
+        <el-radio-button label="2">制作中</el-radio-button>
+        <el-radio-button label="3">待送餐</el-radio-button>
+        <el-radio-button label="4">已收货/已送餐</el-radio-button>
         <!-- <el-radio-button label="4">交易完成</el-radio-button> -->
         <el-radio-button label="5">退款单</el-radio-button>
         <el-radio-button label="6">已删除</el-radio-button>
@@ -67,7 +68,7 @@
         <el-date-picker
           v-model="queryParams.createTime"
           value-format="YYYY-MM-DD HH:mm:ss"
-          type="daterange"
+          type="datetimerange"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           :default-time="[new Date('1 00:00:00'), new Date('1 23:59:59')]"
@@ -199,12 +200,12 @@
             <el-button type="primary" link><Icon icon="ep:d-arrow-right" /> 更多</el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-if = "scope.row.statusStr == '未支付'" @click="handlePay(scope.row.id)">确认付款</el-dropdown-item>
+                <!-- <el-dropdown-item v-if = "scope.row.statusStr == '未支付'" @click="handlePay(scope.row.id)">确认付款</el-dropdown-item> -->
                 <el-dropdown-item @click="openForm('orderDetail', scope.row.id)">订单详情</el-dropdown-item>
                 <el-dropdown-item @click="openForm('orderRecord', scope.row.id)">订单记录</el-dropdown-item>
-                <el-dropdown-item @click="handleDelete(scope.row.id)">删除订单</el-dropdown-item>
+                <!-- <el-dropdown-item @click="handleDelete(scope.row.id)">删除订单</el-dropdown-item> -->
                 <el-dropdown-item v-if = "scope.row.statusStr != '未支付'" @click="openForm('remark', scope.row.id)">订单备注</el-dropdown-item>
-                <el-dropdown-item v-if = "scope.row.statusStr == '待收货'" @click="handleTake(scope.row.id)">后台收货</el-dropdown-item>
+                <!-- <el-dropdown-item v-if = "scope.row.statusStr == '待收货'" @click="handleTake(scope.row.id)">后台收货</el-dropdown-item> -->
               </el-dropdown-menu>
             </template>
           </el-dropdown>

@@ -28,6 +28,7 @@ public enum OrderLogEnum {
 	PAY_ORDER_SUCCESS("pay_success","用户付款成功"),
 	CREATE_ORDER_SUCCESS("SUCCESS","订单创建成功"),
 	CREATE_ORDER("yshop_create_order","订单生成"),
+	PRODCUCT_DEPOSIT("yshop_deposit_product","寄存酒水"),
 	NONE_ORDER("NONE","订单OK"),
 	DELIVERY_GOODS("delivery_goods", "订单发货"),
 	OFFLINE_PAY("offline_pay", "线下支付"),

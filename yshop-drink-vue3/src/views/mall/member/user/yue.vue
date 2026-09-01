@@ -25,6 +25,9 @@
       <el-form-item label="积分">
         <el-input v-model="formData.integral" style="width: 370px;"  placeholder="请输入积分" />
       </el-form-item>
+      <el-form-item label="权限密码" prop="pwd">
+          <el-input v-model="formData.pwd" placeholder="密码" type="password" show-password/>
+      </el-form-item>
     </el-form>
       
     <template #footer>
@@ -48,10 +51,12 @@ const formData = ref({
   ptype: 1,
   money: undefined,
   itype: 1,
-  integral: undefined
+  integral: undefined,
+  pwd: undefined
 })
 const formRules = reactive({
   money: [{ required: true, message: '金额不能为空', trigger: 'blur' }],
+  pwd: [{ required: true, message: '密码不能为空', trigger: 'blur' }],
   integral: [{ required: true, message: '积分不能为空', trigger: 'blur' }]
 })
 const formRef = ref() // 表单 Ref
@@ -97,7 +102,8 @@ const resetForm = () => {
     ptype: 1,
     money: undefined,
     itype: 1,
-    integral: undefined
+    integral: undefined,
+    pwd: undefined
   }
   formRef.value?.resetFields()
 }

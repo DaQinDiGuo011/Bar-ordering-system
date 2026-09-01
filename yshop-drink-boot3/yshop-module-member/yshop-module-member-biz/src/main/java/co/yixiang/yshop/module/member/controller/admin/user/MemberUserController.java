@@ -3,9 +3,14 @@ package co.yixiang.yshop.module.member.controller.admin.user;
 import co.yixiang.yshop.framework.common.pojo.CommonResult;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.module.member.controller.admin.user.vo.*;
+import co.yixiang.yshop.module.member.controller.app.user.vo.TopPointsVO;
 import co.yixiang.yshop.module.member.convert.user.UserConvert;
 import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
+import co.yixiang.yshop.module.member.service.user.MemberUserService;
 import co.yixiang.yshop.module.member.service.user.UserService;
+import co.yixiang.yshop.module.system.controller.admin.permission.vo.permission.SysPasswordConfigVO;
+import co.yixiang.yshop.module.system.service.permission.SysPasswordConfigServiceImpl;
+import co.yixiang.yshop.module.system.util.oauth2.BusiPwdEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 import java.util.List;
 
+import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static co.yixiang.yshop.framework.common.pojo.CommonResult.success;
+import static co.yixiang.yshop.module.system.enums.ErrorCodeConstants.PWD_ERROR;
 
 @Tag(name = "管理后台 - 用户")
 @RestController
@@ -28,7 +35,11 @@ public class MemberUserController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private SysPasswordConfigServiceImpl passwordConfigService;
 
+    @Resource
+    private MemberUserService memberUserService;
     @PostMapping("/create")
     @Operation(summary = "创建用户")
     @PreAuthorize("@ss.hasPermission('member:user:create')")
@@ -40,6 +51,8 @@ public class MemberUserController {
     @Operation(summary = "更新用户")
     @PreAuthorize("@ss.hasPermission('member:user:update')")
     public CommonResult<Boolean> updateUser(@Valid @RequestBody UserUpdateReqVO updateReqVO) {
+        updateReqVO.setNowMoney(null);
+        updateReqVO.setIntegral(null);
         userService.updateUser(updateReqVO);
         return success(true);
     }
@@ -48,6 +61,10 @@ public class MemberUserController {
     @Operation(summary = "更新用户余额与积分")
     @PreAuthorize("@ss.hasPermission('member:user:update')")
     public CommonResult<Boolean> updateMony(@Valid @RequestBody UserUpdateMoneyReqVO updateReqVO) {
+        SysPasswordConfigVO configVO = passwordConfigService.getByType(BusiPwdEnum.BALANCE_MDF.getValue());
+        if(configVO != null && com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(configVO.getPasswordValue()) && !configVO.getPasswordValue().equals(updateReqVO.getPwd())){
+            throw exception(PWD_ERROR);
+        }
         userService.updateMony(updateReqVO);
         return success(true);
     }
@@ -88,5 +105,10 @@ public class MemberUserController {
     }
 
 
+    @GetMapping("/points/rank")
+    @Operation(summary = "积分排行分页")
+    public CommonResult<List<TopPointsVO>> getPiontPage() {
 
+        return success(memberUserService.getTop50Rank());
+    }
 }

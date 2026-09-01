@@ -17,6 +17,7 @@ export interface VO {
   distribute: number
   score: number
   instructions: string
+  userId: number
   image: string
   limit: number
 }
@@ -52,4 +53,8 @@ export const deleteCoupon = async (id: number) => {
 // 导出优惠券 Excel
 export const exportCoupon = async (params) => {
   return await request.download({ url: `/coupon/export-excel`, params })
+}
+//分配一人一券给用户
+export const distributeUserCoupon = async (data: VO) => {
+  return await request.post({ url: `/coupon/distributeUser` , data})
 }

@@ -70,9 +70,17 @@ public class AppStoreController {
 
     @GetMapping("/getShop")
     @Operation(summary = "获取最近的店铺")
-    public CommonResult<AppStoreShopVO> getShop(@RequestParam("shop_id") Integer shopId) {
-        StoreShopDO storeShopDO = appStoreShopService.getById(shopId);
-        return success(StoreShopConvert.INSTANCE.convert02(storeShopDO));
+    public CommonResult<AppStoreShopVO> getShop() {
+        List<StoreShopDO> storeShopDOList = appStoreShopService.list();
+//        StoreShopDO storeShopDO = appStoreShopService.getById(shopId);
+        StoreShopDO storeShopDO = null;
+        if(storeShopDOList.isEmpty()){
+            storeShopDO = new StoreShopDO();
+        }else{
+            storeShopDO = storeShopDOList.get(0);
+        }
+        AppStoreShopVO storeShopVO = StoreShopConvert.INSTANCE.convert02(storeShopDO);
+        return success(storeShopVO);
     }
 
 

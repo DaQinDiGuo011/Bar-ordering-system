@@ -55,7 +55,8 @@ public class YshopApiLogAutoConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new ApiAccessLogInterceptor());
+        registry.addInterceptor(new ApiAccessLogInterceptor())
+                .excludePathPatterns("/infra/ws/**");
     }
 
 }

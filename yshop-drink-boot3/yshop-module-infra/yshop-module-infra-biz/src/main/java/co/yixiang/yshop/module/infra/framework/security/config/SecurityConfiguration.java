@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Infra 模块的 Security 配置
@@ -39,6 +40,8 @@ public class SecurityConfiguration {
                         .requestMatchers(adminSeverContextPath + "/**").permitAll();
                 // 文件读取
                 registry.requestMatchers(buildAdminApi("/infra/file/*/get/**")).permitAll();
+
+                registry.requestMatchers(new AntPathRequestMatcher("/infra/ws")).permitAll();
             }
 
         };

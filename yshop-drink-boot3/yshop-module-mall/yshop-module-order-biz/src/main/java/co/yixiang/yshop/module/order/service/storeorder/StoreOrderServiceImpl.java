@@ -10,7 +10,6 @@ import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
 import co.yixiang.yshop.framework.common.exception.ErrorCode;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils;
-import co.yixiang.yshop.framework.tenant.core.context.TenantContextHolder;
 import co.yixiang.yshop.module.member.controller.admin.user.vo.UserRespVO;
 import co.yixiang.yshop.module.member.convert.user.UserConvert;
 import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
@@ -23,8 +22,10 @@ import co.yixiang.yshop.module.message.redismq.msg.OrderMsg;
 import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.*;
 import co.yixiang.yshop.module.order.convert.storeorder.StoreOrderConvert;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
+import co.yixiang.yshop.module.order.dal.dataobject.storeorder.WineStoreDO;
 import co.yixiang.yshop.module.order.dal.dataobject.storeordercartinfo.StoreOrderCartInfoDO;
 import co.yixiang.yshop.module.order.dal.mysql.storeorder.StoreOrderMapper;
+import co.yixiang.yshop.module.order.dal.mysql.storeorder.WineStoreMapper;
 import co.yixiang.yshop.module.order.dal.mysql.storeordercartinfo.StoreOrderCartInfoMapper;
 import co.yixiang.yshop.module.order.enums.OrderLogEnum;
 import co.yixiang.yshop.module.order.enums.PayTypeEnum;
@@ -48,6 +49,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +94,8 @@ public class StoreOrderServiceImpl implements StoreOrderService {
 
     @Resource
     private AsyncStoreOrderService asyncStoreOrderService;
-
+    @Resource
+    private WineStoreMapper wineStoreMapper;
 
     @Value("${yshop.demo}")
     private Boolean isDemo;
@@ -120,6 +123,7 @@ public class StoreOrderServiceImpl implements StoreOrderService {
         //发货自取模式 直接收货
         if(UpdateOrderEnum.ORDER_SEND.getValue().equals(updateReqVO.getUpdateType())
                 && updateObj.getOrderType().equals(OrderLogEnum.ORDER_TAKE_IN.getValue())){
+
            this.takeStoreOrder(updateObj.getId());
             //todo 异步打印小票 商业版本才有 官网购买：https://www.yixiang.co
 
@@ -133,11 +137,27 @@ public class StoreOrderServiceImpl implements StoreOrderService {
 
         }
         //堂食模式
-        if(UpdateOrderEnum.ORDER_SEND.getValue().equals(updateReqVO.getUpdateType())
+        if(UpdateOrderEnum.ORDER_CONFIRM.getValue().equals(updateReqVO.getUpdateType())
                 && updateObj.getOrderType().equals(OrderLogEnum.ORDER_TAKE_DESK.getValue())){
-
+            if(OrderInfoEnum.STATUS_1.getValue().equals(updateObj.getStatus())){
+                this.orderConfirm(updateObj.getId());
+            }else if(OrderInfoEnum.STATUS_2.getValue().equals(updateObj.getStatus())){
+                this.pendingReceipt(updateObj.getId());
+            }else if(OrderInfoEnum.STATUS_3.getValue().equals(updateObj.getStatus())){
+                this.takeStoreOrder(updateObj.getId());
+            }
             //todo 异步打印小票 商业版本才有 官网购买：https://www.yixiang.co
 
+            return;
+        }
+        if(OrderInfoEnum.STATUS_3.getValue().equals(updateObj.getStatus()) && PayTypeEnum.JC.getValue().equals(updateObj.getPayType())){
+            WineStoreDO storeDO = wineStoreMapper.selectById(updateObj.getRemark());
+            if(storeDO == null || storeDO.getStoreStatus() != 4){
+                throw exception(STORE_DEPOSIT_NOT_EXISTS);
+            }
+            storeDO.setStoreStatus(5);
+            storeDO.setUpdateTime(LocalDateTime.now());
+            wineStoreMapper.updateById(storeDO);
         }
         storeOrderMapper.updateById(updateObj);
 
@@ -202,6 +222,18 @@ public class StoreOrderServiceImpl implements StoreOrderService {
         appStoreOrderService.takeOrder(storeOrderDO.getOrderId(),storeOrderDO.getUid());
     }
 
+    @Override
+    public void orderConfirm(Long id) {
+        StoreOrderDO storeOrderDO = storeOrderMapper.selectById(id);
+        appStoreOrderService.orderConfirm(storeOrderDO.getOrderId(),storeOrderDO.getUid());
+    }
+
+    @Override
+    public void pendingReceipt(Long id) {
+        StoreOrderDO storeOrderDO = storeOrderMapper.selectById(id);
+        appStoreOrderService.takeOrder(storeOrderDO.getOrderId(),storeOrderDO.getUid());
+    }
+
 
     private void validateStoreOrderExists(Long id) {
         if (storeOrderMapper.selectById(id) == null) {
@@ -240,6 +272,28 @@ public class StoreOrderServiceImpl implements StoreOrderService {
     @Override
     public PageResult<StoreOrderRespVO> getStoreOrderPage(StoreOrderPageReqVO pageReqVO) {
         PageResult<StoreOrderDO> pageResult =  storeOrderMapper.selectPage(pageReqVO);
+        PageResult<StoreOrderRespVO> storeOrderRespVO =  StoreOrderConvert.INSTANCE.convertPage(pageResult);
+        for (StoreOrderRespVO storeOrderRespVO1 : storeOrderRespVO.getList()) {
+            LambdaQueryWrapper<StoreOrderCartInfoDO> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(StoreOrderCartInfoDO::getOid,storeOrderRespVO1.getId());
+            List<StoreOrderCartInfoDO> storeOrderCartInfoDOList = storeOrderCartInfoMapper.selectList(wrapper);
+            MemberUserDO memberUserDO = memberUserMapper.selectById(storeOrderRespVO1.getUid());
+            UserRespVO  userRespVO = UserConvert.INSTANCE.convert4(memberUserDO);
+            storeOrderRespVO1.setStoreOrderCartInfoDOList(storeOrderCartInfoDOList);
+            storeOrderRespVO1.setUserRespVO(userRespVO);
+            storeOrderRespVO1.setStatusStr(this.handleOrderStatus(storeOrderRespVO1.getPaid()
+                    ,storeOrderRespVO1.getStatus(),storeOrderRespVO1.getRefundStatus(),storeOrderRespVO1.getIsSystemDel()));
+        }
+        return storeOrderRespVO;
+    }
+
+    @Override
+    public PageResult<StoreOrderRespVO> getWorkStoreOrderPage(StoreOrderPageReqVO pageReqVO) {
+        List<Integer> statusList = new ArrayList<>();
+        statusList.add(0);
+        statusList.add(1);
+        statusList.add(2);
+        PageResult<StoreOrderDO> pageResult =  storeOrderMapper.selectPageByStatusList(pageReqVO, statusList);
         PageResult<StoreOrderRespVO> storeOrderRespVO =  StoreOrderConvert.INSTANCE.convertPage(pageResult);
         for (StoreOrderRespVO storeOrderRespVO1 : storeOrderRespVO.getList()) {
             LambdaQueryWrapper<StoreOrderCartInfoDO> wrapper = new LambdaQueryWrapper<>();
@@ -334,7 +388,7 @@ public class StoreOrderServiceImpl implements StoreOrderService {
         }else if (PayTypeEnum.ALI.getValue().equals(storeOrderDO.getPayType())){
             throw exception(new ErrorCode(999997,"支付宝暂时不支持退款"));
         }
-        storeOrderMapper.updateById(storeOrderDO);
+            storeOrderMapper.updateById(storeOrderDO);
         //增加流水
         billService.income(storeOrderDO.getUid(), "商品退款", BillDetailEnum.CATEGORY_1.getValue(),
                 BillDetailEnum.TYPE_5.getValue(),
@@ -347,6 +401,24 @@ public class StoreOrderServiceImpl implements StoreOrderService {
         //退库存
         this.regressionStock(storeOrderDO,0);
 
+    }
+
+    @Override
+    public void reRefund(Long id, String msg, Long uid) {
+        StoreOrderDO storeOrderDO = storeOrderMapper.selectById(id);
+        if (storeOrderDO == null) {
+            throw exception(STORE_ORDER_NOT_EXISTS);
+        }
+
+        if (OrderInfoEnum.REFUND_STATUS_2.getValue().equals(storeOrderDO.getRefundStatus())) {
+            throw exception(ORDER_REFUNDED);
+        }
+
+        storeOrderDO.setRefundStatus(OrderInfoEnum.REFUND_STATUS_3.getValue());
+        storeOrderDO.setRefundReason(msg);
+        storeOrderDO.setUpdater(String.valueOf(uid));
+
+        storeOrderMapper.updateById(storeOrderDO);
     }
 
     /**
@@ -400,14 +472,23 @@ public class StoreOrderServiceImpl implements StoreOrderService {
             statusName = "已删除";
         }else if (payStatus == 0 && status == 0) {
             statusName = "未支付";
-        } else if (payStatus == 1 && status == 0 && refundStatus == 0) {
+        } else if (payStatus == 1 && status == 0 && (refundStatus == 0 || refundStatus == 3)) {
             statusName = "未发货";
-        }  else if (payStatus == 1 && status == 1 && refundStatus == 0) {
+            if(refundStatus == 3){
+                statusName = "拒绝退单-未发货";
+            }
+        }  else if (payStatus == 1 && status == 1 && (refundStatus == 0 || refundStatus == 3)) {
             statusName = "待收货";
-        }  else if (payStatus == 1 && status == 2 && refundStatus == 0) {
+            if(refundStatus == 3){
+                statusName = "拒绝退单-待收货";
+            }
+        }  else if (payStatus == 1 && status == 2 && (refundStatus == 0 || refundStatus == 3)) {
             statusName = "待评价";
-        } else if (payStatus == 1 && status == 3 && refundStatus == 0) {
+        } else if (payStatus == 1 && status == 3 && (refundStatus == 0 || refundStatus == 3) ) {
             statusName = "已完成";
+            if(refundStatus == 3){
+                statusName = "拒绝退单-已完成";
+            }
         } else if (payStatus == 1 && refundStatus == 2) {
             statusName = "已退款";
         }

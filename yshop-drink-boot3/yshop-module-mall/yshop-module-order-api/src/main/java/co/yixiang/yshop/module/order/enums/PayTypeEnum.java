@@ -22,6 +22,7 @@ public enum PayTypeEnum {
 	ALI("alipay","支付宝支付"),
 	WEIXIN("weixin","微信支付"),
 	YUE("yue","余额支付"),
+	JC("JC", "寄存领取"),
 	INTEGRAL("integral","积分兑换");
 
 

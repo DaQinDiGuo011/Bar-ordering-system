@@ -3,6 +3,7 @@ package co.yixiang.yshop.module.order.controller.admin.storeorder;
 import co.yixiang.yshop.framework.common.pojo.CommonResult;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.framework.excel.core.util.ExcelUtils;
+import co.yixiang.yshop.module.infra.api.websocket.WebSocketSenderApi;
 import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.*;
 import co.yixiang.yshop.module.order.convert.storeorder.StoreOrderConvert;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
@@ -12,7 +13,11 @@ import co.yixiang.yshop.module.order.service.storeorder.AsyncStoreOrderService;
 import co.yixiang.yshop.module.order.service.storeorder.StoreOrderService;
 import co.yixiang.yshop.module.order.service.storeorder.dto.OrderTimeDataDto;
 import co.yixiang.yshop.module.order.service.storeorderstatus.StoreOrderStatusService;
+import co.yixiang.yshop.module.system.controller.admin.permission.vo.permission.SysPasswordConfigVO;
+import co.yixiang.yshop.module.system.service.permission.SysPasswordConfigServiceImpl;
+import co.yixiang.yshop.module.system.util.oauth2.BusiPwdEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,10 +29,15 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
+import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static co.yixiang.yshop.framework.common.pojo.CommonResult.success;
+import static co.yixiang.yshop.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
+import static co.yixiang.yshop.module.order.enums.ErrorCodeConstants.PRICE_ISNULL_ERROR;
+import static co.yixiang.yshop.module.system.enums.ErrorCodeConstants.PWD_ERROR;
 
 @Tag(name = "管理后台 - 订单")
 @RestController
@@ -43,6 +53,9 @@ public class StoreOrderController {
     private AsyncCountRedisDAO asyncCountRedisDAO;
     @Resource
     private AsyncStoreOrderService asyncStoreOrderService;
+
+    @Resource
+    private SysPasswordConfigServiceImpl passwordConfigService;
 
 
     @PostMapping("/create")
@@ -110,6 +123,15 @@ public class StoreOrderController {
     public CommonResult<PageResult<StoreOrderRespVO>> getStoreOrderPage(@Valid StoreOrderPageReqVO pageVO) {
         return success(storeOrderService.getStoreOrderPage(pageVO));
     }
+    @Resource
+    private WebSocketSenderApi webSocketSenderApi;
+
+    @GetMapping("/work-page")
+    @Operation(summary = "获得工作台订单分页")
+    @PreAuthorize("@ss.hasPermission('order:store-order:query')")
+    public CommonResult<PageResult<StoreOrderRespVO>> getWorkStoreOrderPage(@Valid StoreOrderPageReqVO pageVO) {
+        return success(storeOrderService.getWorkStoreOrderPage(pageVO));
+    }
 
     @GetMapping("/record-list")
     @Operation(summary = "获得订单记录列表")
@@ -146,6 +168,13 @@ public class StoreOrderController {
     @PostMapping(value = "/refund")
     @PreAuthorize("@ss.hasPermission('order:store-order:update')")
     public CommonResult<Boolean> refund(@Validated @RequestBody StoreOrderRefundVO updateReqVO) {
+        SysPasswordConfigVO configVO = passwordConfigService.getByType(BusiPwdEnum.ORDER_REFUND.getValue());
+        if(configVO != null && StringUtils.isNotBlank(configVO.getPasswordValue()) && !configVO.getPasswordValue().equals(updateReqVO.getPwd())){
+            throw exception(PWD_ERROR);
+        }
+        if(updateReqVO.getPayPrice() == null || BigDecimal.ZERO.compareTo(updateReqVO.getPayPrice()) == 0){
+            throw exception(PRICE_ISNULL_ERROR);
+        }
         storeOrderService.orderRefund(updateReqVO.getId(),updateReqVO.getPayPrice(), 0, null);
         return success(true);
     }
@@ -157,5 +186,14 @@ public class StoreOrderController {
     }
 
 
-
+    @Operation(summary = "拒绝退款")
+    @PostMapping(value = "/reRefund")
+    public CommonResult<Boolean> reRefund(@Validated @RequestBody StoreOrderRefundVO updateReqVO) {
+        SysPasswordConfigVO configVO = passwordConfigService.getByType(BusiPwdEnum.ORDER_REFUND.getValue());
+        if(configVO != null && StringUtils.isNotBlank(configVO.getPasswordValue()) && !configVO.getPasswordValue().equals(updateReqVO.getPwd())){
+            throw exception(PWD_ERROR);
+        }
+        storeOrderService.reRefund(updateReqVO.getId(),updateReqVO.getRefuseReason(), getLoginUserId());
+        return success(true);
+    }
 }

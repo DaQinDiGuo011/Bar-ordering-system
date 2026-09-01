@@ -1,9 +1,11 @@
 <template>
 	<!-- #ifdef MP-WEIXIN -->
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+		:fixed="true"
+		bgColor="#ffffff"
+		:title="title"
+		left-arrow
+		:placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<!-- #endif -->
@@ -64,7 +66,7 @@ import { useMainStore } from '@/store/store'
 import { storeToRefs } from 'pinia'
 const { proxy } = getCurrentInstance();
 const main = useMainStore()
-const { address,isLogin} = storeToRefs(main)
+const { address,loginValueFlag} = storeToRefs(main)
 
 const title = ref("确认订单")
 const product = ref({})
@@ -80,7 +82,7 @@ const customStyle = computed(() => {
 
 onLoad(() => {
 	console.log('address:',address.value)
-	if(!isLogin.value) {
+	if(!loginValueFlag.value) {
 		uni.navigateTo({url: '/pages/components/pages/login/login'})
 	}
 	product.value = cookie.get('score_product')

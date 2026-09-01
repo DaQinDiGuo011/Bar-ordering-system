@@ -1,26 +1,14 @@
 package co.yixiang.yshop.module.order.dal.dataobject.storeorder;
 
-import lombok.*;
-import java.util.*;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
-import com.baomidou.mybatisplus.annotation.*;
 import co.yixiang.yshop.framework.mybatis.core.dataobject.BaseDO;
+import com.baomidou.mybatisplus.annotation.KeySequence;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * 订单 DO
@@ -101,7 +89,9 @@ public class StoreOrderDO extends BaseDO {
     /**
      * 优惠券id
      */
-    private Integer couponId;
+//    private Integer couponId;
+
+    private String deskNumber;
     /**
      * 优惠券金额
      */
@@ -183,15 +173,15 @@ public class StoreOrderDO extends BaseDO {
     /**
      * 使用积分
      */
-    private BigDecimal useIntegral;
+    private Integer useIntegral;
     /**
      * 实际支付积分
      */
-    private BigDecimal payIntegral;
+    private Integer payIntegral;
     /**
      * 给用户退了多少积分
      */
-    private BigDecimal backIntegral;
+    private Integer backIntegral;
     /**
      * 备注
      */
@@ -272,6 +262,6 @@ public class StoreOrderDO extends BaseDO {
 
     private String outTradeNo;
 
-
+    private String couponIdList;
 
 }

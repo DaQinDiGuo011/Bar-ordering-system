@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.yixiang.yshop.module.member.dal.mysql.user.UserWalletMapper">
+    <select id="selectByUserId" resultType="co.yixiang.yshop.module.member.dal.dataobject.user.UserWalletDO">
+        select * from user_wallet where user_id = #{userId}
+    </select>
+    <update id="rechargeBalance">
+        update user_wallet
+        set balance = balance + #{addBalance},
+        grow_value = grow_value + #{addGrow},
+        total_recharge = total_recharge + #{addTotalRecharge},
+        total_gift  = total_gift + #{addTotalGift},
+        where user_id = #{userId}
+    </update>
+</mapper>

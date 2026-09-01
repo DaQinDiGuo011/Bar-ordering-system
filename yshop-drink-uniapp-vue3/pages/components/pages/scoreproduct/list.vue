@@ -1,9 +1,11 @@
 <template>
 	<!-- #ifdef MP-WEIXIN -->
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+		:fixed="true"
+		bgColor="#ffffff"
+		:title="title"
+		left-arrow
+		:placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<!-- #endif -->

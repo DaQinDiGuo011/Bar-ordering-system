@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.yixiang.yshop.module.member.dal.mysql.user.UserCouponMapper">
+
+    <!-- 查询用户卡券列表 -->
+    <select id="selectCouponList" resultType="co.yixiang.yshop.module.member.dal.dataobject.user.UserCouponDO">
+        SELECT id,user_id,coupon_id,title,type,status,start_time,end_time,use_time,create_time
+        FROM user_coupon
+        WHERE user_id = #{userId}
+        <if test="status != null ">
+            AND status = #{status}
+        </if>
+        <if test="type != null and type != 0">
+            AND type = #{type}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND title LIKE CONCAT('%',#{keyword},'%')
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 统计顶部tab：全部/未使用/已使用/已失效 数量 -->
+    <select id="countTopTab" resultType="java.util.Map">
+        SELECT
+        status,
+        COUNT(id) AS count
+        FROM user_coupon
+        WHERE user_id = #{userId}
+        GROUP BY status
+    </select>
+
+    <!-- 统计左侧业务分类数量 -->
+    <select id="countCateTab" resultType="java.util.Map">
+        SELECT
+        type,
+        COUNT(id) AS count
+        FROM user_coupon
+        WHERE user_id = #{userId}
+        GROUP BY type
+    </select>
+
+</mapper>

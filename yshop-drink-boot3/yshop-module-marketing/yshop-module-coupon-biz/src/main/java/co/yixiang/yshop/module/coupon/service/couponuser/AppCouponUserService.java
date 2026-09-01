@@ -24,5 +24,5 @@ public interface AppCouponUserService extends IService<CouponUserDO> {
     List<AppMyCouponVO> getList(Long uid, Long shopId,int type, int page, int pagesize);
 
 
-
+    List<AppMyCouponVO> getListByIdList(List<Long> idList, Integer status);
 }

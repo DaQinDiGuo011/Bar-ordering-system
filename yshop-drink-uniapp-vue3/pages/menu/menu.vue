@@ -1,13 +1,13 @@
 <template>
 	<layout>
 		<uv-navbar
-		  :fixed="false"
-		  :title="title"
-		  left-arrow
-		  @leftClick="$onClickLeft"
+			:fixed="true"
+			bgColor="#ffffff"
+			:title="title"
+			:placeholder="true"
 		/>
 		
-		<view class="container" v-if="!loading">
+		<view class="container" >
 			<!-- <view>
 				<image :src="shopAd" mode="aspectFill" class="w-100 " style="height: 250rpx;"></image>
 			</view> -->
@@ -19,15 +19,15 @@
 				<view class="header">
 					<view class="mr-1"><image :src="store.image" class="store-header-img"></image></view>
 					<view class="left" v-if="orderType == 'takein'">
-						<view class="store-name" @click="selectShop()">
+						<view class="store-name">
 							<text>{{ store.name }}</text>
 							<view class="iconfont iconarrow-right"></view>
 						</view>
-						<view class="store-location">
+						<!-- <view class="store-location">
 							<text>距离您 {{kmUnit(store.dis)}}</text>
-						</view>
+						</view> -->
 					</view>
-					<view class="left overflow-hidden" v-else>
+					<!-- <view class="left overflow-hidden" v-else>
 						<view class="store-name" @click="selectShop()">
 							<view>{{ store.name }}
 								<text class="small" v-if="store.distance > 0 && orderType == 'takeout'">(配送距离:
@@ -36,18 +36,22 @@
 							</view>
 							<view class="iconfont iconarrow-right"></view>
 						</view>
-					</view>
-					<view class="right">
-						<view class="dinein" :class="{active: orderType == 'takein'}" @tap="takein">
-							<text>自取</text>
-						</view>
-						<view class="takeout" :class="{active: orderType == 'takeout'}" @tap="takout">
-							<text>外卖</text>
-						</view>
+					</view> -->
+					<view class="scan-btn-wrap">
+					  <view 
+						class="btn-scan" 
+						:class="{scanned: localNumb}"
+						@click="clickSaoNumb"
+					  >
+						{{ localNumb ? '✅桌号' + localNumb : '📷扫码桌号' }}
+					  </view>
+					  <!-- <view v-if="!localNumb" class="scan-tip">请扫桌面小程序码选择桌号</view> -->
 					</view>
 				</view>
 			</view>
-		
+			<!-- <view v-if="member.openId == 'oAckDxmBZ531iQyW1Gq9sx4KNN-I'" style="min-height: 30px;border: 1px solid red;">
+				扫码参数：{{optionParam}}
+			</view> -->
 			<!-- #ifdef H5 -->
 			<view class="content"
 				:style="{height: 'calc(100vh - 300rpx + '+(store.notice ? '0rpx':'60rpx')+')'}">
@@ -143,7 +147,7 @@
 					<view class="wrapper">
 						<view class="basic">
 							<view class="name">{{ good.storeName }}</view>
-							<view class="tips flex justify-between">{{ good.storeInfo }} <text style="color: red;">可获积分:10</text></view>
+							<!-- <view class="tips flex justify-between">{{ good.storeInfo }} <text style="color: red;">可获积分:10</text></view> -->
 						</view>
 						<view class="properties">
 							<view class="property" v-for="(item, index) in good.productAttr" :key="index">
@@ -187,50 +191,60 @@
 			<!-- 商品详情模态框 end -->
 			<!-- 购物车详情popup -->
 			<uv-popup ref="popup" mode="bottom" class="cart-popup">
-				<template #default>
-				<view  class="cart-popup">
-					 <view class="top">
-					  <text @tap="handleCartClear">清空</text>
-					 </view>
-					 <scroll-view class="cart-list" scroll-y>
-					  <view class="wrapper">
-					   <view class="item" v-for="(item, index) in cart" :key="index">
-						<view class="left">
-						 <view class="name">{{ item.name }}</view>
-						 <view class="props">{{ item.valueStr }}</view>
+				<template v-slot:default>
+					<view  class="cart-popup">
+						<view class="top">
+							<text @tap="handleCartClear">清空</text>
 						</view>
-						<view class="center">
-						 <text>￥{{ item.price }}</text>
-						</view>
-						<view class="right">
-						 <button type="default" plain size="mini" class="btn" hover-class="none"
-						  @tap="handleCartItemReduce(index)">
-						  <view class="iconfont iconsami-select"></view>
-						 </button>
-						 <view class="number">{{ item.number }}</view>
-						 <button type="primary" class="btn" size="min" hover-class="none"
-						  @tap="handleCartItemAdd(index)">
-						  <view class="iconfont iconadd-select"></view>
-						 </button>
-						</view>
-					   </view>
-							
-					  </view>
-					 </scroll-view>
-				 </view>
+						<scroll-view class="cart-list" scroll-y>
+						    <view class="wrapper">
+								<view class="item" v-for="(item, index) in cart" :key="index">
+									<view class="left">
+										<view class="name">{{ item.name }}</view>
+										<view class="props">{{ item.valueStr }}</view>
+									</view>
+									<view class="center">
+										<text>￥{{ item.price }}</text>
+									</view>
+									<view class="right">
+										<button type="default" plain size="mini" class="btn" hover-class="none"
+										  @tap="handleCartItemReduce(index)">
+											<view class="iconfont iconsami-select"></view>
+										</button>
+										<view class="number">{{ item.number }}</view>
+											<button type="primary" class="btn" size="min" hover-class="none"
+											@tap="handleCartItemAdd(index)">
+												<view class="iconfont iconadd-select"></view>
+											</button>
+										</view>
+									</view>
+							</view>
+						</scroll-view>
+					</view>
 				</template>
 			</uv-popup>
 			   <!-- 购物车详情popup -->
 			<uv-toast ref="uToast"></uv-toast>
 		</view>
 		<!--轻提示-->
-		<view class="loading" v-else>
+		<!-- <view class="loading" v-else>
 			<uv-loading-icon  color="#DA5650" size=40 mode="circle" ></uv-loading-icon>
 			<button type="primary" class="locate-store-btn" @click="init"
 				v-if="!store.id">定位最近的门店</button>
-		<!-- 	<uv-toast ref="uToast"></uv-toast> -->
-		</view>
+		</view> -->
 	</layout>
+	<uv-popup ref="loginPopup"
+		mode="bottom"
+		border-radius="24rpx"
+		duration="600"
+		mask-close-able
+		:round="20"
+		:closeOnClickOverlay="true"
+		:safeAreaInsetBottom="false"
+		z-index="9910"
+		teleport>
+		<login @close="closeLogin"></login>
+	</uv-popup>
 </template>
 
 <script setup>
@@ -250,8 +264,13 @@ import {
 import {
   menuAds
 } from '@/api/market'
+import login from '@/pages/login/login.vue'
+import {onLaunch} from '@dcloudio/uni-app'
+
+const loginPopup = ref(null)
+
 const main = useMainStore()
-const { orderType,address, store,location,isLogin } = storeToRefs(main)
+const { orderType,address, store,location,loginValueFlag,member } = storeToRefs(main)
 const title = ref('点餐')
 const text = ref('滚动通知')
 
@@ -271,23 +290,25 @@ const newValue = ref([])
 const shopAd = ref('')
 const isCartShow = ref(true)
 const popup = ref()
+const localNumb = ref("")
+const optionParam = ref("")
 
 // #region agent log
-const debugLog = (hypothesisId, location, message, data = {}) => {
-	fetch('http://127.0.0.1:7584/ingest/889fdfba-29d4-4509-84ce-3dfa9254da00', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'e0348b' },
-		body: JSON.stringify({
-			sessionId: 'e0348b',
-			runId: 'pre-fix',
-			hypothesisId,
-			location,
-			message,
-			data,
-			timestamp: Date.now()
-		})
-	}).catch(() => {})
-}
+// const debugLog = (hypothesisId, location, message, data = {}) => {
+// 	fetch('http://127.0.0.1:7584/ingest/889fdfba-29d4-4509-84ce-3dfa9254da00', {
+// 		method: 'POST',
+// 		headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': 'e0348b' },
+// 		body: JSON.stringify({
+// 			sessionId: 'e0348b',
+// 			runId: 'pre-fix',
+// 			hypothesisId,
+// 			location,
+// 			message,
+// 			data,
+// 			timestamp: Date.now()
+// 		})
+// 	}).catch(() => {})
+// }
 const measureMenuLayout = () => {
 	const sys = uni.getSystemInfoSync()
 	const notice = !!store.value?.notice
@@ -299,16 +320,16 @@ const measureMenuLayout = () => {
 	// #ifdef MP-WEIXIN
 	platform = 'MP-WEIXIN'
 	// #endif
-	debugLog('H1', 'menu.vue:measureMenuLayout', 'layout context', {
-		platform,
-		windowHeight: sys.windowHeight,
-		screenHeight: sys.screenHeight,
-		statusBarHeight: sys.statusBarHeight,
-		hasNotice: notice,
-		inlineHeight,
-		cssExpectedH5: 'calc(100vh - 212rpx - 188rpx)',
-		cssExpectedDefault: 'calc(100vh - 212rpx)'
-	})
+	// debugLog('H1', 'menu.vue:measureMenuLayout', 'layout context', {
+	// 	platform,
+	// 	windowHeight: sys.windowHeight,
+	// 	screenHeight: sys.screenHeight,
+	// 	statusBarHeight: sys.statusBarHeight,
+	// 	hasNotice: notice,
+	// 	inlineHeight,
+	// 	cssExpectedH5: 'calc(100vh - 212rpx - 188rpx)',
+	// 	cssExpectedDefault: 'calc(100vh - 212rpx)'
+	// })
 	const q = uni.createSelectorQuery()
 	q.select('.container').boundingClientRect()
 	q.select('.main').boundingClientRect()
@@ -317,29 +338,32 @@ const measureMenuLayout = () => {
 	q.select('.goods').boundingClientRect()
 	q.select('.nav').boundingClientRect()
 	q.exec((res) => {
-		const [container, main, content, menus, goods, nav] = res || []
-		debugLog('H3', 'menu.vue:measureMenuLayout', 'parent rects', {
-			containerH: container?.height,
-			mainH: main?.height,
-			navH: nav?.height
-		})
-		debugLog('H1', 'menu.vue:measureMenuLayout', 'content rect', {
-			contentH: content?.height,
-			contentTop: content?.top,
-			windowHeight: sys.windowHeight,
-			heightRatio: content?.height && sys.windowHeight ? (content.height / sys.windowHeight).toFixed(3) : null
-		})
-		debugLog('H5', 'menu.vue:measureMenuLayout', 'scroll columns', {
-			menusH: menus?.height,
-			goodsH: goods?.height,
-			menusGoodsDelta: menus?.height != null && goods?.height != null ? Math.abs(menus.height - goods.height) : null
-		})
+		// const [container, main, content, menus, goods, nav] = res || []
+		// debugLog('H3', 'menu.vue:measureMenuLayout', 'parent rects', {
+		// 	containerH: container?.height,
+		// 	mainH: main?.height,
+		// 	navH: nav?.height
+		// })
+		// debugLog('H1', 'menu.vue:measureMenuLayout', 'content rect', {
+		// 	contentH: content?.height,
+		// 	contentTop: content?.top,
+		// 	windowHeight: sys.windowHeight,
+		// 	heightRatio: content?.height && sys.windowHeight ? (content.height / sys.windowHeight).toFixed(3) : null
+		// })
+		// debugLog('H5', 'menu.vue:measureMenuLayout', 'scroll columns', {
+		// 	menusH: menus?.height,
+		// 	goodsH: goods?.height,
+		// 	menusGoodsDelta: menus?.height != null && goods?.height != null ? Math.abs(menus.height - goods.height) : null
+		// })
 	})
 }
 // #endregion
-
+const closeLogin = ()=> {
+	nextTick(()=>{
+		loginPopup.value.close()
+	})
+}
 const newkmUnit = computed(() => (param) =>{
-  console.log('param:',param)
   return '10km'
 })
 const goodCartNum = computed(() => { //计算单个饮品添加到购物车的数量
@@ -361,6 +385,39 @@ const menuCartNum = computed(() =>{
 const getCartGoodsNumber = computed(() => { //计算购物车总数
 	return cart.value.reduce((acc, cur) => acc + cur.number, 0)
 })
+
+const clickSaoNumb = async ()=>{
+	try {
+	    uni.scanCode({
+			// onlyFromCamera：true 只允许相机扫码；false 可选择相册图片识别二维码
+			onlyFromCamera: true,
+			scanType: ['qrCode', 'miniProgram'] ,// 同时支持条形码、二维码
+			success: (res) => {
+				if (!res.path || !res.path.includes('menu?scene=')){
+					uni.showToast({
+					   title: '扫码失败，请重试或者联系工作人员',
+					   icon: 'none'
+					})
+				}else{
+					localNumb.value = res.path.split('menu?scene=')[1]
+				}
+	
+			},
+			fail: (err) => {
+			    console.error('扫码失败：', err)
+			    uni.showToast({ title: '识别失败', icon: 'none' })
+			}
+		})
+	
+	} catch (err) {
+		console.log('扫码失败/用户取消', err)
+		uni.showToast({
+			title: '已取消扫码',
+			icon: 'none'
+		})
+	}
+}
+
 const getCartGoodsPrice = computed(() =>{ //计算购物车总价
 	let price = cart.value.reduce((acc, cur) => acc + cur.number * cur.price, 0);
 	return parseFloat(price).toFixed(2);
@@ -377,16 +434,26 @@ const spread = computed(() => { //差多少元起送
 // 监听自定义事件
 uni.$on('refreshMenu', () => {
 	// 在这里执行onLoad逻辑
-	console.log('refreshMenu1:',store.value.id)
 	init()
 })
 
 onPullDownRefresh(() => {
 	init()
 })
-onLoad(() => {
+onLoad((options) => {
 	init();
 	refreshCart()
+	
+	try{
+		optionParam.value = JSON.stringify(options, null, 2)
+		if(options?.scene){
+			// 小程序扫码进来，scene会直接在options顶层，不是 query.scene！！！重点坑
+			const sceneVal = decodeURIComponent(options.scene)
+			localNumb.value = sceneVal
+		}
+	} catch (err) {
+		optionParam.value = JSON.stringify(err, null, 2)
+	}
 })
 onHide(() => {
 	// 重新进入要重新计算页面高度，否则有问题
@@ -416,51 +483,53 @@ const selectShop = () => {
 }
 const uToast = ref()
 const  init = async() => { //页面初始化
-	loading.value = true;
+	// loading.value = true;
     
-	//return
-	let error = {},
-		result = location.value
-	console.log('result:',result)
-	if (!location.value.hasOwnProperty('latitude')) {
-		  console.log('result1:',location.value)
-		  uni.getLocation(({
-			 type: 'wgs84',
-			 success: function (res) {
-			   console.log('location1:',res)
-		
-				result = {
-					latitude: res.latitude,
-					longitude: res.longitude
-				};
-				getShopList(result)
-			 },
-			 fail: function (res) {
-			  
-			   uni.showToast({
-			     title: '获取位置失败，请检查是否开启相关权限',
-			     duration: 2000,
-			     icon: 'error'
-			   });
-			   // 默认地为你为北京地址
-			   result = {
+	// //return
+	// let error = {},
+	let result = {
 			   	latitude: 39.919990,
 			   	longitude: 116.456270
 			   };
-			   getShopList(result)
-			 },
-			 complete: function (res) {
-			 }
-		}));
-		 if(!result.hasOwnProperty('latitude')){
-			result = {
-				latitude: 39.919990,
-				longitude: 116.456270
-			};
-			getShopList(result)
-		 }
-		return
-	}
+	// result = location.value
+	// if (!location.value.hasOwnProperty('latitude')) {
+	// 	  uni.getLocation(({
+	// 		 type: 'wgs84',
+	// 		 success: function (res) {
+	// 		   console.log('location1:',res)
+		
+	// 			result = {
+	// 				latitude: res.latitude,
+	// 				longitude: res.longitude
+	// 			};
+	// 			getShopList(result)
+	// 		 },
+	// 		 fail: function (res) {
+			  
+	// 		   uni.showToast({
+	// 		     title: '获取位置失败，请检查是否开启相关权限',
+	// 		     duration: 2000,
+	// 		     icon: 'error'
+	// 		   });
+	// 		   // 默认地为你为北京地址
+	// 		   result = {
+	// 		   	latitude: 39.919990,
+	// 		   	longitude: 116.456270
+	// 		   };
+	// 		   getShopList(result)
+	// 		 },
+	// 		 complete: function (res) {
+	// 		 }
+	// 	}));
+	// 	 if(!result.hasOwnProperty('latitude')){
+	// 		result = {
+	// 			latitude: 39.919990,
+	// 			longitude: 116.456270
+	// 		};
+	// 		getShopList(result)
+	// 	 }
+	// 	return
+	// }
 	
 	getShopList(result)
    
@@ -497,8 +566,6 @@ const getShopList = async(res) => {
 				goods.value = mygoods;
 				refreshCart();
 			}
-			console.log('goods:',mygoods)
-			console.log('goods:',goods.value)
 			loading.value = false;
 			nextTick(() => measureMenuLayout())
 			uni.stopPullDownRefresh();
@@ -538,11 +605,10 @@ const takout = (force = false) => {
 	if (orderType.value == 'takeout' && force == false) return
 	main.SET_ORDER_TYPE('takeout');
 
-	if (!isLogin.value) {
-		uni.navigateTo({
-			url: '/pages/components/pages/login/login'
+	if (!loginValueFlag.value) {
+		nextTick(()=>{
+			loginPopup.value.open()
 		})
-		return
 	} 
 
 }
@@ -550,11 +616,10 @@ const takein = (force = false) => {
 	if (orderType.value == 'takein' && force == false) return
 	main.SET_ORDER_TYPE('takein');
 
-	if (!isLogin.value) {
-		uni.navigateTo({
-			url: '/pages/components/pages/login/login'
+	if (!loginValueFlag.value) {
+		nextTick(()=>{
+			loginPopup.value.open()
 		})
-		return
 	} 
 
 }
@@ -570,7 +635,6 @@ const handleGoodsScroll = ({ detail }) => { //商品列表滚动事件
 	if (!sizeCalcState.value) {
 		calcSize()
 	}
-	console.log('scrollTop:',detail)
 	const {
 		scrollTop
 	} = detail
@@ -605,6 +669,19 @@ const calcSize = () => {
 	sizeCalcState.value = true
 }
 const handleAddToCart = (cate, newGood, num) =>{ //添加到购物车
+	
+	if (!loginValueFlag.value) {
+		nextTick(()=>{
+			loginPopup.value.open()
+		})
+		return
+	}
+	
+	if(!localNumb.value){
+		//后面要开放
+		uToast.value.show({message:'请先扫描桌号',type: 'info'});
+		return
+	}
 	const index = cart.value.findIndex(item => {
 		if (newGood) {
 			return (item.id === newGood.id) && (item.valueStr === good.value.valueStr)
@@ -731,14 +808,18 @@ const handleCartItemReduce = (index) => {
 	}
 	if (!cart.value.length) {
 		cartPopupVisible.value = false
+		
+		nextTick(()=>{
+			popup.value.close()
+		})
 	}
 	uni.setStorageSync('cart', JSON.parse(JSON.stringify(cart.value)))
 }
 const toPay = () => {
 
-	if (!isLogin.value) {
-		uni.navigateTo({
-			url: '/pages/components/pages/login/login'
+	if (!loginValueFlag.value) {
+		nextTick(()=>{
+			loginPopup.value.open()
 		})
 		return
 	} else {
@@ -746,15 +827,19 @@ const toPay = () => {
 			uToast.value.show({message:'不在店铺营业时间内',type: 'error'});
 			return;
 		}
-		if(orderType.value == 'takeout' && store.value.distance <= 0){
-			uToast.value.show({message:'本店不支持外卖',type: 'error'});
-			return;
+		if(!localNumb.value){
+			uToast.value.show({message:'请先扫描桌号',type: 'info'});
+			return
 		}
+		// if(orderType.value == 'takeout' && store.value.distance <= 0){
+		// 	uToast.value.show({message:'本店不支持外卖',type: 'error'});
+		// 	return;
+		// }
 		// 判断当前是否在配送范围内
-		if (orderType.value == 'takeout' && store.value.distance < store.value.far) {
-			uToast.value.show({message:'选中的地址不在配送范围',type: 'error'});
-			return;
-		}
+		// if (orderType.value == 'takeout' && store.value.distance < store.value.far) {
+		// 	uToast.value.show({message:'选中的地址不在配送范围',type: 'error'});
+		// 	return;
+		// }
 
 		uni.showLoading({
 			title: '加载中'
@@ -762,7 +847,7 @@ const toPay = () => {
 		uni.setStorageSync('cart', JSON.parse(JSON.stringify(cart.value)))
 
 		uni.navigateTo({
-			url: '/pages/components/pages/pay/pay'
+			url: '/pages/components/pages/pay/pay?localNumb=' + localNumb.value
 		})
 	}
 
@@ -845,6 +930,7 @@ page {
 
 	overflow: hidden;
 	position: relative;
+	height: auto;
 }
 
 .loading {
@@ -1414,6 +1500,10 @@ page {
 }
 
 .cart-popup {
+	margin-bottom: 30px;
+}
+.cart-popup {
+	
 	.top {
 		padding: $menu-gap-sm $spacing-row-lg;
 		font-size: $font-size-sm;
@@ -1507,5 +1597,28 @@ page {
 .background-grey {
 	padding: 15rpx !important;
 	background-color: $menu-sold-out-bg;
+}
+.scan-btn-wrap{
+  margin:0;
+}
+.btn-scan{
+  width:220rpx;
+  height:84rpx;
+  line-height:84rpx;
+  text-align:center;
+  border:1rpx dashed #e86890;
+  border-radius:12rpx;
+  font-size:32rpx;
+  color:#e86890;
+  background-color: #f5f5f5;
+}
+.btn-scan.scanned{
+  background:#fef0f5;
+}
+.scan-tip{
+  font-size:24rpx;
+  color:#da2616;
+  text-align:center;
+  margin-top:12rpx;
 }
 </style>

@@ -14,7 +14,6 @@ import { VUE_APP_UPLOAD_URL } from '@/config';
 import { ref } from 'vue';
 
 const props = defineProps(['modelValue'])
-console.log("--> % modelValue:\n", props.modelValue)
 const emit = defineEmits(['update:modelValue'])
 
 const list = ref(props.modelValue)
@@ -38,7 +37,6 @@ const afterRead = async (event) => {
   })
   for (let i = 0; i < lists.length; i++) {
     const result = await uploadFilePromise(lists[i].url)
-    console.log("gxs --> % afterRead % result:\n", result)
     let item = list.value[fileListLen]
     list.value.splice(fileListLen, 1, Object.assign(item, {
       status: 'success',
@@ -60,7 +58,6 @@ const uploadFilePromise = (url) => {
         user: 'test'
       },
       success: (res) => {
-        console.log("gxs --> % returnnewPromise % res:\n", res)
         setTimeout(() => {
           resolve(res.data.data)
         }, 10)

@@ -1,8 +1,10 @@
 <template>
 	<uv-navbar
-	  :fixed="false"
-	  :title="title"
-	  left-arrow
+		:fixed="true"
+		bgColor="#ffffff"
+		:title="title"
+		left-arrow
+		:placeholder="true"
 	  @leftClick="$onClickLeft"
 	/>
 	<view class="remark-page w-100 h-100 overflow-hidden">
@@ -53,9 +55,11 @@ const title = ref('备注')
 const remark = ref('')
 const quickInputs = ref(['请放门把手上', '请放门口', '请放前台桌上', '如地址封闭管理，请电话与我联系'])
 const uToast = ref()
+const localNumb = ref('')
 
 onLoad((opt) => {
 	remark.value = opt.remark
+	localNumb.value = opt.localNumb
 })
 
 const remarkLength = computed(() => {
@@ -77,7 +81,7 @@ const submit = () => {
 		return
 	}
 	uni.navigateTo({
-		url: '/pages/components/pages/pay/pay?remark=' + remark.value
+		url: '/pages/components/pages/pay/pay?remark=' + remark.value + '&localNumb=' + localNumb.value
 	})
 }
 </script>

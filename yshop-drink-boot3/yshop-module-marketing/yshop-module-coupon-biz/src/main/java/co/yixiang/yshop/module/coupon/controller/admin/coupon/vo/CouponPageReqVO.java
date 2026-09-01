@@ -1,12 +1,13 @@
 package co.yixiang.yshop.module.coupon.controller.admin.coupon.vo;
 
-import lombok.*;
+import co.yixiang.yshop.framework.common.pojo.PageParam;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
-import java.util.*;
-import io.swagger.v3.oas.annotations.media.Schema;
-import co.yixiang.yshop.framework.common.pojo.PageParam;
-import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 import static co.yixiang.yshop.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND;
@@ -74,4 +75,5 @@ public class CouponPageReqVO extends PageParam {
     @Schema(description = "限领数量")
     private Integer limit;
 
+    private Long userId;
 }
