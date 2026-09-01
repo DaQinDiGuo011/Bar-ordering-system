@@ -1,0 +1,110 @@
+<template>
+	<uv-navbar
+	  :fixed="true"
+	  bgColor="#ffffff"
+	  title="隐私保护"
+	  left-arrow
+	  :placeholder="true"
+	  @leftClick="$onClickLeft"/>
+  <view class="container">
+    <scroll-view scroll-y class="scroll-wrap">
+      <view class="text-wrap">
+        <view class="page-title">德旺酒馆 小程序隐私保护指引</view>
+        <view class="paragraph">
+本指引是德旺酒馆小程序开发者 韶关市武江区德旺酒吧服务馆(个体工商户)（以下简称“开发者”）为处理你的个人信息而制定。
+        </view>
+
+        <view class="section-title">1. 开发者处理的信息</view>
+        <view class="paragraph">
+			根据法律规定，开发者仅处理实现小程序功能所必要的信息。
+        </view>
+        <view class="paragraph">
+			开发者将在获取你的明示同意后，收集你的手机号，用途是【作为用户凭证】
+        </view>
+        <view class="paragraph">
+			开发者将在获取你的明示同意后，收集你的位置信息，用途是【搜索商家位置】
+		</view>
+
+        <view class="section-title">2. 未成年人保护</view>
+        <view class="paragraph">
+			根据相关法律法规的规定，若你是14周岁以下的未成年人，你需要和你的监护人共同仔细阅读本指引，并在征得监护人明示同意后继续使用小程序服务。开发者将根据相关法律法规的规定及本指引内容，处理经监护人同意而收集的未成年人用户信息，并通过【本指引你的权益部分】披露的内容保障未成年人在个人信息处理活动中的各项权利。
+        </view>
+
+        <view class="section-title">3. 你的权益</view>
+        <view class="paragraph">
+			3.1 关于你的个人信息，你可以通过以下方式与开发者联系，行使查阅、复制、更正、删除等法定权利。
+        </view>
+		<view class="paragraph">
+			3.2 若你在小程序中注册了账号，你可以通过以下方式与开发者联系，申请注销你在小程序中使用的账号。在受理你的申请后，开发者承诺在十五个工作日内完成核查和处理，并按照法律法规要求处理你的相关信息。
+        </view>
+		<view class="paragraph">
+			电话: 15992993693
+		</view>
+		
+        <view class="section-title">4. 开发者对信息的存储</view>
+        <view class="paragraph">
+4.1 开发者承诺，除法律法规另有规定外，开发者对你的信息的保存期限应当为实现处理目的所必要的最短时间。
+        </view>
+        
+		
+
+        <view class="section-title">5. 信息的使用规则</view>
+        <view class="paragraph">5.1 开发者将会在本指引所明示的用途内使用收集的信息</view>
+        <view class="paragraph">5.2 如开发者使用你的信息超出本指引目的或合理范围，开发者必须在变更使用目的或范围前，再次以电话方式告知并征得你的明示同意。</view>
+
+
+        <view class="section-title">6. 信息对外提供</view>
+        <view class="paragraph">
+6.1 开发者承诺，不会主动共享或转让你的信息至任何第三方，如存在确需共享或转让时，开发者应当直接征得或确认第三方征得你的单独同意。
+        </view>
+        <view class="paragraph">
+6.2 开发者承诺，不会对外公开披露你的信息，如必须公开披露时，开发者应当向你告知公开披露的目的、披露信息的类型及可能涉及的信息，并征得你的单独同意。
+        </view>
+
+
+        <view class="section-title">7. 若你认为开发者未遵守上述约定，或有其他的投诉建议、或未成年人个人信息保护相关问题，可通过以下方式与开发者联系；或者向微信进行投诉。</view>
+        <view class="paragraph">电话 : 15992993693</view>
+
+        <view class="update-info">
+更新日期：2026年8月14日<br/>
+生效日期：2026年8月14日
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</template>
+
+<script setup lang="ts"></script>
+
+<style scoped>
+.container {
+  height: 100vh;
+  background-color: #fff;
+}
+.scroll-wrap {
+  height: 100%;
+  padding: 30rpx;
+}
+.page-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin: 35rpx 0 15rpx;
+}
+.paragraph {
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: #222;
+  margin-bottom:16rpx;
+}
+.update-info {
+  margin-top: 60rpx;
+  font-size: 26rpx;
+  color:#666;
+}
+</style>
