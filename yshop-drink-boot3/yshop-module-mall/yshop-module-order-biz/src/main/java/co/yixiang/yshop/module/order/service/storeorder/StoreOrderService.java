@@ -114,5 +114,6 @@ public interface StoreOrderService {
     Long orderNotice();
 
 
+    PageResult<DailyTurnoverRespVO> getDailyTurnoverPage(DailyTurnoverPageReqVO reqVO);
 
 }

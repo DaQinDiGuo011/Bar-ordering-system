@@ -1,29 +1,28 @@
 package co.yixiang.yshop.module.coupon.controller.admin.couponuser;
 
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.bind.annotation.*;
-import jakarta.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.security.access.prepost.PreAuthorize;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Operation;
-
-import jakarta.validation.constraints.*;
-import jakarta.validation.*;
-import java.util.*;
-import java.io.IOException;
-
-import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.framework.common.pojo.CommonResult;
-import static co.yixiang.yshop.framework.common.pojo.CommonResult.success;
-
+import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.framework.excel.core.util.ExcelUtils;
-
 import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.*;
-import co.yixiang.yshop.module.coupon.dal.dataobject.couponuser.CouponUserDO;
 import co.yixiang.yshop.module.coupon.convert.couponuser.CouponUserConvert;
+import co.yixiang.yshop.module.coupon.dal.dataobject.coupon.CouponDO;
+import co.yixiang.yshop.module.coupon.dal.dataobject.couponuser.CouponUserDO;
+import co.yixiang.yshop.module.coupon.service.coupon.CouponService;
 import co.yixiang.yshop.module.coupon.service.couponuser.CouponUserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
+
+import static co.yixiang.yshop.framework.common.pojo.CommonResult.success;
 
 @Tag(name = "管理后台 - 用户领的优惠券")
 @RestController
@@ -33,6 +32,9 @@ public class CouponUserController {
 
     @Resource
     private CouponUserService userService;
+
+    @Resource
+    private CouponService couponService;
 
     @PostMapping("/create")
     @Operation(summary = "创建用户领的优惠券")
@@ -54,7 +56,17 @@ public class CouponUserController {
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('coupon:user:delete')")
     public CommonResult<Boolean> deleteUser(@RequestParam("id") Integer id) {
+        CouponUserDO userDO = userService.getUser(id);
+        if(userDO == null){
+            return success(false);
+        }
         userService.deleteUser(id);
+
+        CouponDO couponDO = couponService.get(Long.valueOf(userDO.getCouponId()));
+        if(couponDO != null){
+            couponDO.setUserId(null);
+            couponService.clearUserId(couponDO.getId());
+        }
         return success(true);
     }
 

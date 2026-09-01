@@ -1,14 +1,14 @@
 package co.yixiang.yshop.module.order.convert.storeorder;
 
-import java.util.*;
-
 import co.yixiang.yshop.framework.common.pojo.PageResult;
-
+import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.*;
 import co.yixiang.yshop.module.order.controller.app.order.vo.AppStoreOrderQueryVo;
+import co.yixiang.yshop.module.order.dal.dataobject.storeorder.DailyTurnoverDO;
+import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.*;
-import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
+
+import java.util.List;
 
 /**
  * 订单 Convert
@@ -27,6 +27,8 @@ public interface StoreOrderConvert {
     StoreOrderRespVO convert(StoreOrderDO bean);
 
     AppStoreOrderQueryVo convert1(StoreOrderDO bean);
+
+    DailyTurnoverRespVO convertDaily(DailyTurnoverDO turnoverDO);
 
     List<StoreOrderRespVO> convertList(List<StoreOrderDO> list);
 

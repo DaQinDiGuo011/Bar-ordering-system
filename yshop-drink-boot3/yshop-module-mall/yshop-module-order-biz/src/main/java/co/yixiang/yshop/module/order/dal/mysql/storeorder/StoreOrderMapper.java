@@ -8,8 +8,10 @@ import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.framework.mybatis.core.mapper.BaseMapperX;
 import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils;
+import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.DailyTurnoverPageReqVO;
 import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.StoreOrderExportReqVO;
 import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.StoreOrderPageReqVO;
+import co.yixiang.yshop.module.order.dal.dataobject.storeorder.DailyTurnoverDO;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
 import co.yixiang.yshop.module.order.enums.AdminOrderStatusEnum;
 import co.yixiang.yshop.module.order.enums.OrderLogEnum;
@@ -43,6 +45,10 @@ public interface StoreOrderMapper extends BaseMapperX<StoreOrderDO> {
                 .eqIfPresent(StoreOrderDO::getOrderType,reqVO.getOrderType())
                 .betweenIfPresent(StoreOrderDO::getCreateTime, reqVO.getCreateTime());
                 //.orderByDesc(StoreOrderDO::getId);
+        String deskArea = reqVO.getDeskArea();
+        if (StrUtil.isNotBlank(deskArea)) {
+            wrapper.likeRight(StoreOrderDO::getDeskNumber, deskArea);
+        }
         if( OrderTypeEnum.TYPE_WORK.getValue().equals(reqVO.getType())){
             wrapper.ne(StoreOrderDO::getIsSystemDel, ShopCommonEnum.DELETE_1.getValue()).orderByAsc(StoreOrderDO::getCreateTime);
         }else{
@@ -144,4 +150,32 @@ public interface StoreOrderMapper extends BaseMapperX<StoreOrderDO> {
             "where refund_status=0 and deleted=0 and paid=1")
     Double sumTotalPrice();
 
+    /**
+     * 每日营业额分页统计
+     * @param page mp分页对象
+     * @param splitHour 营业分割小时
+     * @param startDate 业务开始日期
+     * @param endDate 业务结束日期
+     */
+    @Select("""
+            SELECT
+                DATE(DATE_SUB(pay_time, INTERVAL #{splitHour} HOUR)) AS bizDate,
+                COUNT(*) AS payOrderCount,
+                SUM(pay_price) AS totalTurnover,
+                SUM(IF(pay_type='weixin', pay_price, 0)) AS wxAmount,
+                SUM(IF(pay_type='alipay', pay_price, 0)) AS aliAmount,
+                SUM(IF(pay_type='yue', pay_price, 0)) AS yueAmount,
+                SUM(refund_price) AS refundAmount
+            FROM yshop_store_order
+            WHERE paid = 1
+              AND pay_time IS NOT NULL
+              AND DATE(DATE_SUB(pay_time, INTERVAL #{splitHour} HOUR)) BETWEEN #{startDate} AND #{endDate}
+              AND deleted = 0
+            GROUP BY bizDate
+            ORDER BY bizDate DESC
+            """)
+    PageResult<DailyTurnoverDO> selectDailyTurnoverPage(DailyTurnoverPageReqVO reqVO,
+                                                  @Param("splitHour") Integer splitHour,
+                                                  @Param("startDate") String startDate,
+                                                  @Param("endDate") String endDate);
 }

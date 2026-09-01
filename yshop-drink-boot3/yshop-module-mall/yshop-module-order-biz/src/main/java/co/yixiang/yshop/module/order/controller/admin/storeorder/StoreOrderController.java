@@ -196,4 +196,10 @@ public class StoreOrderController {
         storeOrderService.reRefund(updateReqVO.getId(),updateReqVO.getRefuseReason(), getLoginUserId());
         return success(true);
     }
+
+    @GetMapping("/dailyTurnoverPage")
+    @Operation(summary = "每日营业额分页查询")
+    public CommonResult<PageResult<DailyTurnoverRespVO>> dailyTurnoverPage(@ModelAttribute DailyTurnoverPageReqVO reqVO){
+        return success(storeOrderService.getDailyTurnoverPage(reqVO));
+    }
 }

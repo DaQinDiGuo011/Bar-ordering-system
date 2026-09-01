@@ -11,12 +11,12 @@
       <el-form-item label="寄存用户" prop="userId">
         <div class="flex items-center gap-2">
           <div v-if="selectedMemberName" class="flex items-center">
-            <el-tag closable @close="clearMember">
+            <el-tag :closable="!lockUser" @close="clearMember">
               {{ selectedMemberName }}
             </el-tag>
           </div>
           <div v-else class="text-gray-400 text-sm">未选择寄存用户</div>
-          <el-button type="primary" @click="openMemberDialog">选择用户</el-button>
+          <el-button v-if="!lockUser" type="primary" @click="openMemberDialog">选择用户</el-button>
           <!-- <el-checkbox v-model="bindMemberInfo" label="关联姓名手机号"/> -->
         </div>
       </el-form-item>
@@ -27,10 +27,18 @@
         </div>
       </el-form-item>
       <el-form-item label="寄存人姓名" prop="realName">
-        <el-input v-model="formData.realName" placeholder="请输入寄存人姓名" :disabled="formType=='update'"/>
+        <el-input
+          v-model="formData.realName"
+          placeholder="请输入寄存人姓名"
+          :disabled="formType=='update' || lockUser"
+        />
       </el-form-item>
       <el-form-item label="寄存手机号" prop="phone">
-        <el-input v-model="formData.phone" placeholder="请输入手机号" :disabled="formType=='update'"/>
+        <el-input
+          v-model="formData.phone"
+          placeholder="请输入手机号"
+          :disabled="formType=='update' || lockUser"
+        />
       </el-form-item>
       <el-form-item label="权限密码" prop="pwd">
           <el-input v-model="formData.pwd" placeholder="密码" type="password" show-password/>
@@ -151,6 +159,7 @@ const visible = ref(false)
 const formRef = ref()
 const formType = ref<'create'|'update'>('create')
 const editId = ref<number|null>(null)
+const lockUser = ref(false)
 
 // ========= 用户选择弹窗 =========
 const memberDialogVisible = ref(false)
@@ -277,7 +286,13 @@ const resetProductQuery = ()=>{
 }
 
 /** 打开主弹窗 */
-const open = async (type:'create'|'update',id?:number)=>{
+const open = async (
+  type: 'create' | 'update',
+  id?: number,
+  userId?: number,
+  realName?: string,
+  phone?: string
+) => {
   formType.value = type
   editId.value = id ?? null
   resetForm()
@@ -291,10 +306,20 @@ const open = async (type:'create'|'update',id?:number)=>{
     // 编辑时，需要根据productId回显商品名称，自行补接口
     // selectedProductName.value = res.storeName
   }
+  if(userId){
+    lockUser.value = true
+    if(type === 'create'){
+      formData.userId = userId
+      formData.realName = realName || ''
+      formData.phone = phone || ''
+      selectedMemberName.value = `${realName}(${phone})`
+    }
+  }
   visible.value = true
 }
 
 const resetForm = ()=>{
+  lockUser.value = false
   formRef.value?.resetFields()
   Object.assign(formData,{
     id:null,

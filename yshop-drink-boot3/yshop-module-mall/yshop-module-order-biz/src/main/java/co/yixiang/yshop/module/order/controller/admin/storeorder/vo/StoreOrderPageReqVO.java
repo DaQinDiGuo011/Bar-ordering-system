@@ -51,4 +51,5 @@ public class StoreOrderPageReqVO extends PageParam {
     @Schema(description = "桌面id")
     private Integer deskId;
 
+    private String deskArea;
 }

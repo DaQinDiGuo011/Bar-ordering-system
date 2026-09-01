@@ -8,6 +8,7 @@ import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponExportReq
 import co.yixiang.yshop.module.coupon.controller.admin.coupon.vo.CouponPageReqVO;
 import co.yixiang.yshop.module.coupon.dal.dataobject.coupon.CouponDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -56,4 +57,5 @@ public interface CouponMapper extends BaseMapperX<CouponDO> {
                 .orderByDesc(CouponDO::getId));
     }
 
+    void clearUserId(@Param("updater") String updater,@Param("id") Long id);
 }

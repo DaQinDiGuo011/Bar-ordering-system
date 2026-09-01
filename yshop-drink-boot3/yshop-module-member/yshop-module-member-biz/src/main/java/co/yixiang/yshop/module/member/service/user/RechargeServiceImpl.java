@@ -1,14 +1,20 @@
 package co.yixiang.yshop.module.member.service.user;
 
+import cn.hutool.core.util.IdUtil;
 import co.yixiang.yshop.framework.common.enums.PayIdEnum;
+import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppRechargeOrderVO;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppRechargePackageVO;
 import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
 import co.yixiang.yshop.module.member.dal.dataobject.user.RechargeOrderDO;
 import co.yixiang.yshop.module.member.dal.dataobject.user.RechargePackageDO;
+import co.yixiang.yshop.module.member.dal.dataobject.userbill.UserBillDO;
 import co.yixiang.yshop.module.member.dal.mysql.user.RechargeOrderMapper;
 import co.yixiang.yshop.module.member.dal.mysql.user.RechargePackageMapper;
 import co.yixiang.yshop.module.member.dal.mysql.user.UserWalletMapper;
+import co.yixiang.yshop.module.member.enums.BillDetailEnum;
+import co.yixiang.yshop.module.member.service.userbill.UserBillService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.egzosn.pay.spring.boot.core.PayServiceManager;
 import com.egzosn.pay.spring.boot.core.bean.MerchantPayOrder;
 import jakarta.annotation.Resource;
@@ -21,7 +27,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +42,8 @@ public class RechargeServiceImpl implements RechargeService{
 
     @Resource
     private MemberUserService userService;
-
+    @Resource
+    private UserBillService billService;
     @Resource
     private PayServiceManager manager;
     /**
@@ -76,7 +82,8 @@ public class RechargeServiceImpl implements RechargeService{
 
         RechargeOrderDO order = new RechargeOrderDO();
         order.setUserId(userDO.getId());
-        order.setOrderNo(genOrderNo());
+        String orderSn = IdUtil.getSnowflake(0, 0).nextIdStr();
+        order.setOrderNo("RC" + orderSn);
         order.setRechargeAmount(payAmount);
         order.setPayStatus(0);
 
@@ -95,6 +102,27 @@ public class RechargeServiceImpl implements RechargeService{
             order.setGiftGrowValue(0);
         }
         orderMapper.insert(order);
+
+        UserBillDO userBillDO = new UserBillDO();
+        userBillDO.setUid(userDO.getId());
+        userBillDO.setPm(1);
+        userBillDO.setTitle("账户充值");
+        userBillDO.setCategory("now_money");
+        userBillDO.setType(BillDetailEnum.TYPE_1.getValue());
+        userBillDO.setNumber(order.getRechargeAmount().add(order.getGiftAmount()));
+        userBillDO.setBalance(userDO.getNowMoney().add(order.getRechargeAmount()));
+        String mark = "微信支付"+ order.getRechargeAmount() +"元充值账户";
+        if(order.getGiftAmount() != null && BigDecimal.ZERO.compareTo(order.getGiftAmount()) < 0){
+            mark = mark + "; 并赠送" + order.getGiftAmount() + "元";
+        }
+        userBillDO.setMark(mark);
+        userBillDO.setCreator(String.valueOf(userDO.getId()));
+        userBillDO.setCreateTime(LocalDateTime.now());
+        userBillDO.setUpdater(String.valueOf(userDO.getId()));
+        userBillDO.setUpdateTime(LocalDateTime.now());
+        userBillDO.setStatus(ShopCommonEnum.IS_STATUS_0.getValue());
+        userBillDO.setExtendField(order.getOrderNo());
+        billService.save(userBillDO);
 
         Map<String,Object> resultMap = new HashMap<>();
         resultMap.put("orderId", order.getId());
@@ -134,9 +162,18 @@ public class RechargeServiceImpl implements RechargeService{
 //        walletMapper.rechargeBalance(order.getUserId(), totalAdd, order.getGiftGrowValue(), null, null);
 
         MemberUserDO userDO = userService.getUser(order.getUserId());
-        userDO.setNowMoney(userDO.getNowMoney().add(order.getRechargeAmount()));
 
-        userService.updateById(userDO);
+        userDO.setNowMoney(userDO.getNowMoney().add(order.getRechargeAmount()).add(order.getGiftAmount()));
+
+        UserBillDO userBillDO =  billService.getOne(new LambdaQueryWrapper<UserBillDO>()
+                .eq(UserBillDO::getExtendField, orderNo));
+        if(userBillDO != null) {
+            userBillDO.setStatus(ShopCommonEnum.IS_STATUS_1.getValue());
+            billService.updateById(userBillDO);
+        }
+
+        billService.updateById(userBillDO);
+
     }
 
     @Override
@@ -145,11 +182,4 @@ public class RechargeServiceImpl implements RechargeService{
         return orderDO;
     }
 
-
-    /**
-     * 生成订单号
-     */
-    private String genOrderNo(){
-        return "RC" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0,8);
-    }
 }

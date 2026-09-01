@@ -13363,7 +13363,7 @@ CREATE TABLE `recharge_order` (
   user_id BIGINT NOT NULL,
   package_id BIGINT COMMENT '套餐id，自定义充值为空',
   recharge_amount DECIMAL(12,2) NOT NULL COMMENT '实充金额',
-  gift_amount DECIMAL(12,2) NOT NULL,
+  gift_amount DECIMAL(12,2) NOT NULL COMMENT'赠送金额',
   gift_grow_value INT NOT NULL,
   pay_status TINYINT DEFAULT 0 COMMENT '0待支付 1已支付 2已取消',
   pay_time DATETIME NULL,

@@ -64,6 +64,19 @@
         />
       </el-form-item>
 
+      <el-form-item label="桌号区域" prop="deskArea">
+        <el-select
+          v-model="queryParams.deskArea"
+          placeholder="全部区域"
+          clearable
+          class="!w-240px"
+          @change="handleQuery"
+        >
+          <el-option label="A区" value="A" />
+          <el-option label="B区" value="B" />
+          <el-option label="C区" value="C" />
+        </el-select>
+      </el-form-item>
       <el-form-item label="创建时间" prop="createTime">
         <el-date-picker
           v-model="queryParams.createTime"
@@ -259,6 +272,7 @@ const queryParams = reactive({
   createTime: [],
   orderStatus: "",
   payStatus: "",
+  deskArea: "",
   orderType: ""
 
 })

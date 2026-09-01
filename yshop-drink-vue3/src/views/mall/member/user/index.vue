@@ -2,9 +2,9 @@
   <ContentWrap>
      <el-tabs v-model="activeName"  @tab-click="handleClick">
       <el-tab-pane label="全部" name=""/>
-      <el-tab-pane label="微信小程序" name="routine"/>
+      <!-- <el-tab-pane label="微信小程序" name="routine"/>
       <el-tab-pane label="公众号" name="wechat"/>
-      <el-tab-pane label="H5" name="h5"/>
+      <el-tab-pane label="H5" name="h5"/> -->
     </el-tabs>
     <!-- 搜索工作栏 -->
     <el-form

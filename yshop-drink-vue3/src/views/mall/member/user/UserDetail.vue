@@ -99,6 +99,7 @@
               </el-select>
             </el-form-item>
             <el-form-item>
+              <el-button type="primary" @click="openDistributeCoupon" v-hasPermi="['coupon::update']">分配</el-button>
               <el-button type="primary" @click="couponQuery.pageNo=1;getCouponList()">查询</el-button>
               <el-button @click="resetCouponQuery()">重置</el-button>
             </el-form-item>
@@ -131,10 +132,32 @@
                 <el-tag v-else-if="scope.row.status ===1" type="info">已使用</el-tag>
               </template>
             </el-table-column>
+            <el-table-column label="优惠券ID" align="center" prop="couponId" width="70"/>
+
             <el-table-column label="有效期开始" align="center" prop="startTime" :formatter="dateFormatter" width="170"/>
             <el-table-column label="有效期结束" align="center" prop="endTime" :formatter="dateFormatter" width="170"/>
             <el-table-column label="兑换码" align="center" prop="exchangeCode"/>
             <el-table-column label="领取时间" align="center" prop="createTime" :formatter="dateFormatter" width="170"/>
+            <el-table-column label="操作" align="center" width="140" fixed="right">
+              <template #default="scope">
+                <el-button
+                  v-if="scope.row.status === 0"
+                  link
+                  type="danger"
+                  @click="handleCouponDelete(scope.row)"
+                >
+                  移除
+                </el-button>
+                <el-button
+                  v-if="scope.row.status === 0"
+                  link
+                  type="primary"
+                  @click="handleCouponVerification(scope.row)"
+                >
+                  核销
+                </el-button>
+              </template>
+            </el-table-column>
           </el-table>
           <Pagination
             :total="couponTotal"
@@ -155,6 +178,9 @@
               </el-select>
             </el-form-item>
             <el-form-item>
+              <el-button type="primary" @click="openWineStoreForm('create')">
+                <Icon icon="ep:plus" class="mr-5px" />新增寄存
+              </el-button>
               <el-button type="primary" @click="wineQuery.pageNo=1;getWineStoreList()">查询</el-button>
               <el-button @click="resetWineQuery()">重置</el-button>
             </el-form-item>
@@ -186,6 +212,13 @@
             <el-table-column label="寄存时间" align="center" prop="createTime" :formatter="dateFormatter"/>
             <el-table-column label="领取时间" align="center" prop="receiveTime" :formatter="dateFormatter"/>
             <el-table-column label="备注" align="center" prop="remark" width="180"/>
+            <el-table-column label="操作" align="center" width="80" fixed="right">
+              <template #default="scope">
+                <el-button link type="primary" @click="openWineStoreForm('update', scope.row.id)">
+                  编辑
+                </el-button>
+              </template>
+            </el-table-column>
           </el-table>
           <Pagination
             :total="wineTotal"
@@ -197,20 +230,25 @@
       </el-tabs>
      
     </div>
+    <DistributeCoupon ref="distributeCouponRef" @success="getCouponList" />
+    <WineStoreForm ref="wineStoreFormRef" @success="getWineStoreList" />
   </el-drawer>
 </template>
 <script setup lang="ts">
 import * as UserApi from '@/api/member/user'
 import { formatDate } from '@/utils/formatTime'
+import { ElMessage } from 'element-plus'
 import type { TabsPaneContext } from 'element-plus'
 import * as UserBillApi from '@/api/member/userBill'
 import { dateFormatter } from '@/utils/formatTime'
 import * as WineStoreApi from '@/api/mall/wineStore'
 import * as CouponUserApi from '@/api/mall/coupon/user/'
+import DistributeCoupon from './DistributeCoupon.vue'
+import WineStoreForm from '@/views/mall/wineStore/WineStoreForm.vue'
 import defaultAvatar from '@/static/images/user-default.png'
 
 const { t } = useI18n() // 国际化
-// const message = useMessage() // 消息弹窗
+const message = useMessage() // 消息弹窗
 const dialogTitle = ref('') // 弹窗的标题
 const drawer = ref(false)
 const DetailData = ref({})
@@ -233,6 +271,8 @@ const queryParams = reactive({
   status: null
 })
 const loading = ref(false)
+const distributeCouponRef = ref()
+const wineStoreFormRef = ref()
 
 
 // ==========优惠券变量==========
@@ -270,6 +310,28 @@ const resetWineQuery = () => {
   wineQuery.storeStatus = null
   wineQuery.pageNo = 1
   getWineStoreList()
+}
+
+/** 打开分配优惠券弹窗 */
+const openDistributeCoupon = () => {
+  if (couponQuery.userId) {
+    distributeCouponRef.value.open(couponQuery.userId, DetailData.value.nickname)
+  }
+}
+
+/** 打开寄存表单 */
+const openWineStoreForm = (type: 'create' | 'update', id?: number) => {
+  if (type === 'create') {
+    wineStoreFormRef.value.open(
+      'create',
+      undefined,
+      wineQuery.userId ?? undefined,
+      DetailData.value.nickname,
+      DetailData.value.mobile
+    )
+  } else {
+    wineStoreFormRef.value.open('update', id, wineQuery.userId ?? undefined)
+  }
 }
 
 /** 打开弹窗 */
@@ -338,6 +400,36 @@ const getCouponList = async ()=>{
   }finally {
     couponLoading.value = false
   }
+}
+
+/** 移除用户优惠券 */
+const handleCouponDelete = async (data: any) => {
+  try {
+    if (data.status === 1) {
+      ElMessage.warning('该优惠券已使用，不能移除')
+      return
+    }
+    await message.delConfirm()
+    await CouponUserApi.deleteUser(data.id)
+    message.success(t('common.delSuccess'))
+    getCouponList()
+  } catch {}
+}
+
+/** 核销用户优惠券 */
+const handleCouponVerification = async (data: any) => {
+  try {
+    if (data.status === 1) {
+      ElMessage.warning('该优惠券已使用，不能核销')
+      return
+    }
+    await message.confirm('确认要核销该优惠券')
+    const param = Object.assign({}, data)
+    param.status = 1
+    await CouponUserApi.updateUser(param)
+    message.success(t('common.updateSuccess'))
+    getCouponList()
+  } catch {}
 }
 
 /** 查询寄存记录 */

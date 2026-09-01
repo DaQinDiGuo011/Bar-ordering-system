@@ -128,3 +128,6 @@ export const reRefundUrl = async (data: StoreOrderVO) => {
   return await request.post({ url: `/order/store-order/reRefund`, data})
 }
 
+export const getDailyTurnoverPage = async (params) => {
+  return await request.get({ url: `/order/store-order/dailyTurnoverPage`,params})
+}

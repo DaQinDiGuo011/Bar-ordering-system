@@ -21,6 +21,7 @@ import co.yixiang.yshop.module.message.mq.producer.WeixinNoticeProducer;
 import co.yixiang.yshop.module.message.redismq.msg.OrderMsg;
 import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.*;
 import co.yixiang.yshop.module.order.convert.storeorder.StoreOrderConvert;
+import co.yixiang.yshop.module.order.dal.dataobject.storeorder.DailyTurnoverDO;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.WineStoreDO;
 import co.yixiang.yshop.module.order.dal.dataobject.storeordercartinfo.StoreOrderCartInfoDO;
@@ -438,6 +439,28 @@ public class StoreOrderServiceImpl implements StoreOrderService {
 
         return  storeOrderMapper.selectCount(wrapper);
 
+    }
+
+    @Override
+    public PageResult<DailyTurnoverRespVO> getDailyTurnoverPage(DailyTurnoverPageReqVO reqVO) {
+        PageResult<DailyTurnoverDO> dailyTurnoverPage = storeOrderMapper.selectDailyTurnoverPage(reqVO, reqVO.getSplitHour(), reqVO.getStartDate(), reqVO.getEndDate());
+
+        PageResult<DailyTurnoverRespVO> respVOPageResult = new PageResult<>();
+
+        List<DailyTurnoverRespVO> respVOList = new ArrayList<>();
+        if(dailyTurnoverPage != null){
+            dailyTurnoverPage.getList().stream().forEach(info ->{
+                DailyTurnoverRespVO respVO = StoreOrderConvert.INSTANCE.convertDaily(info);
+                respVOList.add(respVO);
+            });
+            respVOPageResult.setTotal(dailyTurnoverPage.getTotal());
+        }else{
+            respVOPageResult.setTotal(0L);
+        }
+
+        respVOPageResult.setList(respVOList);
+
+        return respVOPageResult;
     }
 
     /**

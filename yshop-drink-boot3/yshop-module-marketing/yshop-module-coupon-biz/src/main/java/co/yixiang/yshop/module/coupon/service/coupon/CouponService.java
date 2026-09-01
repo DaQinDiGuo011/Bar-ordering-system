@@ -72,4 +72,5 @@ public interface CouponService {
      */
     List<CouponDO> getList(CouponExportReqVO exportReqVO);
 
+    void clearUserId(Long id);
 }

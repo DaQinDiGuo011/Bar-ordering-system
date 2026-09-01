@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
+import static co.yixiang.yshop.framework.web.core.util.WebFrameworkUtils.getLoginUserId;
 import static co.yixiang.yshop.module.coupon.enums.ErrorCodeConstants.COUPON_NOT_EXISTS;
 import static co.yixiang.yshop.module.coupon.enums.ErrorCodeConstants.USER_NOT_EXISTS;
 
@@ -144,6 +145,11 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public List<CouponDO> getList(CouponExportReqVO exportReqVO) {
         return Mapper.selectList(exportReqVO);
+    }
+
+    @Override
+    public void clearUserId( Long id) {
+        Mapper.clearUserId(String.valueOf(getLoginUserId()), id);
     }
 
 }
