@@ -9,6 +9,7 @@ import co.yixiang.yshop.framework.common.enums.PayIdEnum;
 import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
 import co.yixiang.yshop.framework.common.exception.ErrorCode;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
+import co.yixiang.yshop.framework.mybatis.core.util.MyBatisUtils;
 import co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils;
 import co.yixiang.yshop.module.member.controller.admin.user.vo.UserRespVO;
 import co.yixiang.yshop.module.member.convert.user.UserConvert;
@@ -34,6 +35,7 @@ import co.yixiang.yshop.module.order.enums.UpdateOrderEnum;
 import co.yixiang.yshop.module.order.service.storeorderstatus.StoreOrderStatusService;
 import co.yixiang.yshop.module.product.service.storeproduct.AppStoreProductService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.egzosn.pay.common.bean.RefundOrder;
 import com.egzosn.pay.common.bean.RefundResult;
 import com.egzosn.pay.spring.boot.core.PayServiceManager;
@@ -49,6 +51,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -443,24 +446,38 @@ public class StoreOrderServiceImpl implements StoreOrderService {
 
     @Override
     public PageResult<DailyTurnoverRespVO> getDailyTurnoverPage(DailyTurnoverPageReqVO reqVO) {
-        PageResult<DailyTurnoverDO> dailyTurnoverPage = storeOrderMapper.selectDailyTurnoverPage(reqVO, reqVO.getSplitHour(), reqVO.getStartDate(), reqVO.getEndDate());
-
-        PageResult<DailyTurnoverRespVO> respVOPageResult = new PageResult<>();
+        if (StrUtil.isBlank(reqVO.getStartDate()) || StrUtil.isBlank(reqVO.getEndDate())) {
+            return PageResult.empty();
+        }
+        Integer splitHour = reqVO.getSplitHour() == null ? 8 : reqVO.getSplitHour();
+        Long shopId = SecurityFrameworkUtils.getLoginUser().getShopId();
+        if (shopId == null) {
+            shopId = 0L;
+        }
+        LocalDateTime startTime = LocalDate.parse(reqVO.getStartDate()).atStartOfDay().minusHours(splitHour);
+        LocalDateTime endTime = LocalDate.parse(reqVO.getEndDate()).plusDays(1).atStartOfDay().minusHours(splitHour);
+        IPage<DailyTurnoverDO> dailyTurnoverPage = storeOrderMapper.selectDailyTurnoverPage(
+                MyBatisUtils.buildPage(reqVO), shopId, splitHour, startTime, endTime);
 
         List<DailyTurnoverRespVO> respVOList = new ArrayList<>();
-        if(dailyTurnoverPage != null){
-            dailyTurnoverPage.getList().stream().forEach(info ->{
+        if (dailyTurnoverPage != null && dailyTurnoverPage.getRecords() != null) {
+            for (DailyTurnoverDO info : dailyTurnoverPage.getRecords()) {
+                info.setTimeRangeStr(buildTimeRange(info.getBizDate(), splitHour));
                 DailyTurnoverRespVO respVO = StoreOrderConvert.INSTANCE.convertDaily(info);
                 respVOList.add(respVO);
-            });
-            respVOPageResult.setTotal(dailyTurnoverPage.getTotal());
-        }else{
-            respVOPageResult.setTotal(0L);
+            }
         }
 
-        respVOPageResult.setList(respVOList);
+        return new PageResult<>(respVOList, dailyTurnoverPage == null ? 0L : dailyTurnoverPage.getTotal());
+    }
 
-        return respVOPageResult;
+    private String buildTimeRange(String bizDate, Integer splitHour) {
+        if (StrUtil.isBlank(bizDate) || splitHour == null) {
+            return null;
+        }
+        LocalDate date = LocalDate.parse(bizDate);
+        return String.format("%s %02d:00 ~ %s %02d:59", bizDate, splitHour,
+                date.plusDays(1), (splitHour + 23) % 24);
     }
 
     /**

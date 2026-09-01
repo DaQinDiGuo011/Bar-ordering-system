@@ -8,7 +8,6 @@ import co.yixiang.yshop.framework.common.pojo.PageResult;
 import co.yixiang.yshop.framework.mybatis.core.mapper.BaseMapperX;
 import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.framework.security.core.util.SecurityFrameworkUtils;
-import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.DailyTurnoverPageReqVO;
 import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.StoreOrderExportReqVO;
 import co.yixiang.yshop.module.order.controller.admin.storeorder.vo.StoreOrderPageReqVO;
 import co.yixiang.yshop.module.order.dal.dataobject.storeorder.DailyTurnoverDO;
@@ -16,11 +15,13 @@ import co.yixiang.yshop.module.order.dal.dataobject.storeorder.StoreOrderDO;
 import co.yixiang.yshop.module.order.enums.AdminOrderStatusEnum;
 import co.yixiang.yshop.module.order.enums.OrderLogEnum;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -153,9 +154,10 @@ public interface StoreOrderMapper extends BaseMapperX<StoreOrderDO> {
     /**
      * 每日营业额分页统计
      * @param page mp分页对象
+     * @param shopId 门店ID
      * @param splitHour 营业分割小时
-     * @param startDate 业务开始日期
-     * @param endDate 业务结束日期
+     * @param startTime 业务开始时间
+     * @param endTime 业务结束时间
      */
     @Select("""
             SELECT
@@ -163,19 +165,22 @@ public interface StoreOrderMapper extends BaseMapperX<StoreOrderDO> {
                 COUNT(*) AS payOrderCount,
                 SUM(pay_price) AS totalTurnover,
                 SUM(IF(pay_type='weixin', pay_price, 0)) AS wxAmount,
-                SUM(IF(pay_type='alipay', pay_price, 0)) AS aliAmount,
                 SUM(IF(pay_type='yue', pay_price, 0)) AS yueAmount,
                 SUM(refund_price) AS refundAmount
             FROM yshop_store_order
             WHERE paid = 1
               AND pay_time IS NOT NULL
-              AND DATE(DATE_SUB(pay_time, INTERVAL #{splitHour} HOUR)) BETWEEN #{startDate} AND #{endDate}
+              AND is_system_del = 0
               AND deleted = 0
+              AND (shop_id = #{shopId} OR #{shopId} = 0)
+              AND pay_time >= #{startTime}
+              AND pay_time < #{endTime}
             GROUP BY bizDate
             ORDER BY bizDate DESC
             """)
-    PageResult<DailyTurnoverDO> selectDailyTurnoverPage(DailyTurnoverPageReqVO reqVO,
+    IPage<DailyTurnoverDO> selectDailyTurnoverPage(IPage<DailyTurnoverDO> page,
+                                                  @Param("shopId") Long shopId,
                                                   @Param("splitHour") Integer splitHour,
-                                                  @Param("startDate") String startDate,
-                                                  @Param("endDate") String endDate);
+                                                  @Param("startTime") LocalDateTime startTime,
+                                                  @Param("endTime") LocalDateTime endTime);
 }
