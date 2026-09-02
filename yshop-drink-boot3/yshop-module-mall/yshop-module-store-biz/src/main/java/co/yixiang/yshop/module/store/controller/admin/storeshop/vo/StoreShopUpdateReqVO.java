@@ -15,4 +15,5 @@ public class StoreShopUpdateReqVO extends StoreShopBaseVO {
     @NotNull(message = "id不能为空")
     private Long id;
 
+    private List<String> adImageList;
 }

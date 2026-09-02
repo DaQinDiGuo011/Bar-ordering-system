@@ -392,7 +392,7 @@ public class StoreOrderServiceImpl implements StoreOrderService {
         }else if (PayTypeEnum.ALI.getValue().equals(storeOrderDO.getPayType())){
             throw exception(new ErrorCode(999997,"支付宝暂时不支持退款"));
         }
-            storeOrderMapper.updateById(storeOrderDO);
+        storeOrderMapper.updateById(storeOrderDO);
         //增加流水
         billService.income(storeOrderDO.getUid(), "商品退款", BillDetailEnum.CATEGORY_1.getValue(),
                 BillDetailEnum.TYPE_5.getValue(),

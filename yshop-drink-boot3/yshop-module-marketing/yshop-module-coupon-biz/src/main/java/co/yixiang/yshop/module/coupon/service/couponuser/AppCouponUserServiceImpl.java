@@ -51,9 +51,7 @@ public class AppCouponUserServiceImpl extends ServiceImpl<CouponUserMapper, Coup
                         .gt(CouponUserDO::getEndTime,nowTime);
                 break;
             case STATUS_1:
-                wrapper.eq(CouponUserDO::getStatus,CouponStatusEnum.STATUS_1.getValue())
-                        .lt(CouponUserDO::getStartTime,nowTime)
-                        .gt(CouponUserDO::getEndTime,nowTime);
+                wrapper.eq(CouponUserDO::getStatus,CouponStatusEnum.STATUS_1.getValue());
                 break;
             case STATUS_2:
                 wrapper.lt(CouponUserDO::getEndTime,nowTime);

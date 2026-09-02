@@ -34,7 +34,6 @@
           type="primary"
           plain
           @click="openForm('create')"
-          v-hasPermi="['member:recharge-package:create']"
         >
           <Icon icon="ep:plus" class="mr-5px" /> 新增
         </el-button>

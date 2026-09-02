@@ -21,8 +21,7 @@
             "path" : "pages/order/order",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "订单",
-                "enablePullDownRefresh": true
+                "navigationBarTitleText": "订单"
             }
             
         }
@@ -131,10 +130,7 @@
 			}, {
 				"path": "pages/coupons/coupons",
 				"style": {
-					"enablePullDownRefresh": true,
-					"navigationBarTitleText": "我的卡券",
-					"navigationBarTextStyle": "black",
-					"navigationBarBackgroundColor": "#ffffff"
+					"navigationBarTitleText": "我的优惠券"
 				}
 			}, {
 				"path": "pages/mine/userinfo",
@@ -179,20 +175,20 @@
 				"path": "pages/scoreproduct/detail",
 				"style": {
 					"navigationBarTitleText": "产品详情",
-					"enablePullDownRefresh": true
+					"enablePullDownRefresh": false
 				}
 			
 			}, {
 				"path": "pages/scoreproduct/order",
 				"style": {
 					"navigationBarTitleText": "订单列表",
-					"enablePullDownRefresh": true
+					"enablePullDownRefresh": false
 				}
 			}, {
 				"path": "pages/scoreproduct/orderDetail",
 				"style": {
 					"navigationBarTitleText": "订单详情",
-					"enablePullDownRefresh": true
+					"enablePullDownRefresh": false
 				}
 			}
 			,{
@@ -219,6 +215,7 @@
 				{
 					"path": "pages/balanceLog/balanceLog",
 					"style": {
+						// "enablePullDownRefresh": true,
 						"navigationBarTitleText": ""
 					}
 				},

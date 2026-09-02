@@ -20,8 +20,8 @@
         <Materials v-model="formData.images" num="5" type="image" />
       </el-form-item>
 
-      <el-form-item label="客户端广告组图" prop="clientAdImages">
-        <Materials v-model="formData.clientAdImages" num="5" type="image" />
+      <el-form-item label="客户端广告组图" prop="adImageList">
+        <Materials v-model="formData.adImageList" num="5" type="image" />
       </el-form-item>
 
       <el-form-item label="Logo图片" prop="logoImage">
@@ -147,7 +147,7 @@ const formData = ref({
   mobile: undefined,
   image: undefined,
   images: undefined,
-  clientAdImages: undefined,
+  adImageList: undefined,
   address: undefined,
   addressMap: undefined,
   lng: undefined,
@@ -178,7 +178,7 @@ const formRules = reactive({
   mobile: [{ required: true, message: '店铺电话不能为空', trigger: 'blur' }],
   image: [{ required: true, message: '图片不能为空', trigger: 'blur' }],
   images: [{ required: true, message: '多张图片不能为空', trigger: 'blur' }],
-  clientAdImages: [{ required: true, message: '广告图片不能为空', trigger: 'blur' }],
+  adImageList: [{ required: true, message: '广告图片不能为空', trigger: 'blur' }],
   address: [{ required: true, message: '详细地址不能为空', trigger: 'blur' }],
   // addressMap: [{ required: true, message: '地图定位地址不能为空', trigger: 'blur' }],
   // lng: [{ required: true, message: '经度不能为空', trigger: 'blur' }],
@@ -282,7 +282,7 @@ const resetForm = () => {
     mobile: undefined,
     image: undefined,
     images: undefined,
-    clientAdImages: undefined,
+    adImageList: undefined,
     address: undefined,
     addressMap: undefined,
     lng: undefined,

@@ -141,10 +141,7 @@ public class UserBillServiceImpl extends ServiceImpl<UserBillMapper, UserBillDO>
                 wrapper.eq(UserBillDO::getType, BillDetailEnum.TYPE_3.getValue());
                 break;
             case 2:
-                wrapper.eq(UserBillDO::getType, BillDetailEnum.TYPE_1.getValue());
-                break;
-            case 3:
-                wrapper.eq(UserBillDO::getType, BillDetailEnum.TYPE_5.getValue());
+                wrapper.in(UserBillDO::getType, BillDetailEnum.TYPE_1.getValue(), BillDetailEnum.TYPE_5.getValue());
                 break;
             default:
 

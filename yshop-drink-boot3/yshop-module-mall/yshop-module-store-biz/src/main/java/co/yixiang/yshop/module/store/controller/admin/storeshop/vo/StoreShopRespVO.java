@@ -3,6 +3,7 @@ package co.yixiang.yshop.module.store.controller.admin.storeshop.vo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Schema(description = "管理后台 - 门店管理 Response VO")
 @Data
@@ -15,5 +16,7 @@ public class StoreShopRespVO extends StoreShopBaseVO {
 
     @Schema(description = "添加时间")
     private LocalDateTime createTime;
+
+    private List<String> adImageList;
 
 }

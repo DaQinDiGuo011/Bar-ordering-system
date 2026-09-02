@@ -304,6 +304,7 @@ const menuList = ref([
   { type:'pages', icon: "red-packet", title: "充值中心" , page:'/pages/components/pages/recharge/recharge'},
   { type:'pages', icon: "coupon", title: "领券中心" , page:'/pages/components/pages/coupons/coupons'},
   { type:'pages', icon: "checkmark-circle", title: "寄存", page: '/pages/components/pages/winestoreMylist/winestoreMylist', showBadge:'true'},
+  {type:'pages', icon: "file-text", title: "交易记录", page: '/pages/components/pages/balanceLog/balanceLog'},
   // { type:'pages', icon: "gift", title: "积分商城", page:'/pages/components/pages/pointShop/pointShop' },
   // { type:'pages', icon: "email", title: "会员中心", page: '/pages/components/pages/vipCard/vipCard'},
   { type:'fnt', icon: "empty-wifi-off", title: "wifi" , page:'/', fnt: openWifiPupop},

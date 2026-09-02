@@ -106,7 +106,7 @@ public class AppUserController {
     @Parameters({
             @Parameter(name = "cate", description = "状态,0余额 1-积分",
                     required = true, example = "1"),
-            @Parameter(name = "type", description = "状态,0全部  1消费 2充值 3退款",
+            @Parameter(name = "type", description = "状态,0全部  1 - 消费 2 - 充值 和 退款",
                     required = true, example = "1"),
             @Parameter(name = "page", description = "页码,默认为1",
                     required = true, example = "1"),

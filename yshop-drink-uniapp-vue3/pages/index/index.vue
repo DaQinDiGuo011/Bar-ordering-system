@@ -21,13 +21,21 @@
 
 		<blank size="10"></blank>
 		<view class="container index-page">
-				<view class="index-banner">
-					<!-- <uv-swiper class="index-banner__swiper" height="300" imgMode="aspectFill" keyName="image" :list="listAds" indicatorMode="dot" indicatorStyle="bottom"></uv-swiper> -->
+				<!-- <view class="index-banner">
+					
 					<uv-image src="https://theonebar-dwjg.com/file/user/barLogo.jpg" width="100%" height="300px"></uv-image>
-					<!-- <view class="index-banner__intro">
-						<view class="index-banner__greet">您好，{{ isLogin ? member.nickname : '游客' }}</view>
-						<view class="index-banner__note">德旺酒馆点餐系统</view>
-					</view> -->
+					
+				</view> -->
+				<view class="swiper-content">
+					<uv-swiper
+						  v-if="listAds.length > 0"
+						  height="220"
+						  imgMode="aspectFill"
+						  keyName="image"
+						  :list="listAds"
+						  indicatorMode="dot"
+						  indicatorStyle="bottom"
+						></uv-swiper>
 				</view>
 				<view class="index-content">
 					<view class="ordering-box">
@@ -309,6 +317,23 @@
 			 homeImage.value = data.images[0]
 			 
 		}
+		
+		
+		let adRaw = data.clientAdImages
+		let tempAdList = []
+		if(adRaw){
+			// 判断是字符串才split；如果已经是数组直接使用
+			if(typeof adRaw === 'string'){
+				tempAdList = adRaw.split(',').filter(s=>!!s.trim())
+			}else if(Array.isArray(adRaw)){
+				tempAdList = adRaw
+			}
+		}
+		// ✅ uv‑swiper要求：转成对象数组 keyName="image"
+		listAds.value = tempAdList.map(imgUrl=>{
+			return { image: imgUrl }
+		})
+		
 		// let shop_id = store.id ? store.id : 0;
 		// let data = await menuAds({
 		// 	shop_id: shop_id
@@ -771,5 +796,11 @@
 			top: -14rpx;
 			right: -18rpx;
 		}
+	}
+	.swiper-content {
+		border: 1px solid red;
+		margin: 40rpx 15rpx 20rpx 15rpx;
+		border-radius: 16rpx;
+		overflow: hidden;
 	}
 	</style>

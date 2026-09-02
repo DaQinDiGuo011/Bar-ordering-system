@@ -1,5 +1,6 @@
 package co.yixiang.yshop.module.store.controller.admin.storeshop;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
@@ -38,6 +39,12 @@ public class StoreShopController {
     @Operation(summary = "创建门店管理")
     @PreAuthorize("@ss.hasPermission('store:shop:create')")
     public CommonResult<Long> createShop(@Valid @RequestBody StoreShopCreateReqVO createReqVO) {
+        if(createReqVO.getAdImageList() != null && !createReqVO.getAdImageList().isEmpty()){
+            createReqVO.setClientAdImages(String.join(",", createReqVO.getAdImageList()));
+        }else{
+            createReqVO.setClientAdImages("");
+        }
+
         return success(shopService.createShop(createReqVO));
     }
 
@@ -45,6 +52,11 @@ public class StoreShopController {
     @Operation(summary = "更新门店管理")
     @PreAuthorize("@ss.hasPermission('store:shop:update')")
     public CommonResult<Boolean> updateShop(@Valid @RequestBody StoreShopUpdateReqVO updateReqVO) {
+        if(updateReqVO.getAdImageList() != null && !updateReqVO.getAdImageList().isEmpty()){
+            updateReqVO.setClientAdImages(String.join(",", updateReqVO.getAdImageList()));
+        }else{
+            updateReqVO.setClientAdImages("");
+        }
         shopService.updateShop(updateReqVO);
         return success(true);
     }
@@ -64,7 +76,13 @@ public class StoreShopController {
     @PreAuthorize("@ss.hasPermission('store:shop:query')")
     public CommonResult<StoreShopRespVO> getShop(@RequestParam("id") Long id) {
         StoreShopDO shop = shopService.getShop(id);
-        return success(StoreShopConvert.INSTANCE.convert(shop));
+        StoreShopRespVO respVO = StoreShopConvert.INSTANCE.convert(shop);
+        if(StringUtils.isNotBlank(respVO.getClientAdImages())){
+            List<String> adImageList = Arrays.asList(respVO.getClientAdImages().split(","));
+            respVO.setAdImageList(adImageList);
+        }
+
+        return success(respVO);
     }
 
     @GetMapping("/list")

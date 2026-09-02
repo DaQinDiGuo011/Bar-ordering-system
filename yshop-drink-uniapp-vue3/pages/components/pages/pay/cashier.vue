@@ -65,6 +65,9 @@ onLoad((options) => {
   if (options.amount) {
     payAmount.value = options.amount
   }
+  if(options.packageId){
+	  packageId.value = options.packageId
+  }
   
 })
 
@@ -75,7 +78,7 @@ async function submitPay() {
     const res = await createPayOrder({
 		// rechargeAmount:0.01,
       rechargeAmount: payAmount.value,
-      // packageId: packageId.value,
+      packageId: packageId.value,
 	  openId: main.openid
     })
     uni.hideLoading()
