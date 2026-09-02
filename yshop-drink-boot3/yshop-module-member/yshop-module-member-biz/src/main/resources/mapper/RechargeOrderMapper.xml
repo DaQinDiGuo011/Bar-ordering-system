@@ -14,4 +14,27 @@
         set pay_status = 1, pay_time = #{now}
         where order_no = #{orderNo} and pay_status = 0
     </update>
+    <select id="selectPage" resultType="co.yixiang.yshop.module.member.dal.dataobject.user.RechargeOrderDO">
+        select o.*, u.nickname, u.mobile
+        from recharge_order o
+        left join yshop_user u on o.user_id = u.id
+        <where>
+            <if test="reqVO.orderNo != null and reqVO.orderNo != ''">
+                and o.order_no like concat('%', #{reqVO.orderNo}, '%')
+            </if>
+            <if test="reqVO.userId != null">
+                and o.user_id = #{reqVO.userId}
+            </if>
+            <if test="reqVO.mobile != null and reqVO.mobile != ''">
+                and u.mobile like concat('%', #{reqVO.mobile}, '%')
+            </if>
+            <if test="reqVO.payStatus != null">
+                and o.pay_status = #{reqVO.payStatus}
+            </if>
+            <if test="reqVO.createTime != null and reqVO.createTime.length == 2">
+                and o.create_time between #{reqVO.createTime[0]} and #{reqVO.createTime[1]}
+            </if>
+        </where>
+        order by o.id desc
+    </select>
 </mapper>

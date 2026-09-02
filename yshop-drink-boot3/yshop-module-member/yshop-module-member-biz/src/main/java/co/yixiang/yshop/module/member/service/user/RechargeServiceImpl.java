@@ -3,6 +3,10 @@ package co.yixiang.yshop.module.member.service.user;
 import cn.hutool.core.util.IdUtil;
 import co.yixiang.yshop.framework.common.enums.PayIdEnum;
 import co.yixiang.yshop.framework.common.enums.ShopCommonEnum;
+import co.yixiang.yshop.framework.common.pojo.PageResult;
+import co.yixiang.yshop.module.member.controller.admin.recharge.vo.RechargeOrderPageReqVO;
+import co.yixiang.yshop.module.member.controller.admin.recharge.vo.RechargePackagePageReqVO;
+import co.yixiang.yshop.module.member.controller.admin.recharge.vo.RechargePackageSaveReqVO;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppRechargeOrderVO;
 import co.yixiang.yshop.module.member.controller.app.user.vo.AppRechargePackageVO;
 import co.yixiang.yshop.module.member.dal.dataobject.user.MemberUserDO;
@@ -15,6 +19,8 @@ import co.yixiang.yshop.module.member.dal.mysql.user.UserWalletMapper;
 import co.yixiang.yshop.module.member.enums.BillDetailEnum;
 import co.yixiang.yshop.module.member.service.userbill.UserBillService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.egzosn.pay.spring.boot.core.PayServiceManager;
 import com.egzosn.pay.spring.boot.core.bean.MerchantPayOrder;
 import jakarta.annotation.Resource;
@@ -180,6 +186,46 @@ public class RechargeServiceImpl implements RechargeService{
     public RechargeOrderDO getOrderByNo(String orderNo) {
         RechargeOrderDO orderDO = orderMapper.selectByOrderNo(orderNo);
         return orderDO;
+    }
+
+    @Override
+    public PageResult<RechargeOrderDO> getRechargeOrderPage(RechargeOrderPageReqVO reqVO) {
+        IPage<RechargeOrderDO> page = orderMapper.selectPage(new Page<>(reqVO.getPageNo(), reqVO.getPageSize()), reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
+    }
+
+    @Override
+    public PageResult<RechargePackageDO> getRechargePackagePage(RechargePackagePageReqVO reqVO) {
+        IPage<RechargePackageDO> page = packageMapper.selectPage(new Page<>(reqVO.getPageNo(), reqVO.getPageSize()), reqVO);
+        return new PageResult<>(page.getRecords(), page.getTotal());
+    }
+
+    @Override
+    public Long createRechargePackage(RechargePackageSaveReqVO dto) {
+        RechargePackageDO pkg = new RechargePackageDO();
+        pkg.setAmount(dto.getAmount());
+        pkg.setGiftAmount(dto.getGiftAmount() == null ? BigDecimal.ZERO : dto.getGiftAmount());
+        pkg.setGrowValue(dto.getGrowValue() == null ? 0 : dto.getGrowValue());
+        pkg.setVipLevel(dto.getVipLevel());
+        pkg.setSort(dto.getSort() == null ? 0 : dto.getSort());
+        pkg.setStatus(dto.getStatus() == null ? 1 : dto.getStatus());
+        packageMapper.insert(pkg);
+        return pkg.getId();
+    }
+
+    @Override
+    public void updateRechargePackage(RechargePackageSaveReqVO dto) {
+        RechargePackageDO pkg = packageMapper.selectById(dto.getId());
+        if(pkg == null){
+            throw new RuntimeException("充值套餐不存在");
+        }
+        pkg.setAmount(dto.getAmount());
+        pkg.setGiftAmount(dto.getGiftAmount() == null ? BigDecimal.ZERO : dto.getGiftAmount());
+        pkg.setGrowValue(dto.getGrowValue() == null ? 0 : dto.getGrowValue());
+        pkg.setVipLevel(dto.getVipLevel());
+        pkg.setSort(dto.getSort() == null ? 0 : dto.getSort());
+        pkg.setStatus(dto.getStatus() == null ? 1 : dto.getStatus());
+        packageMapper.update(pkg);
     }
 
 }

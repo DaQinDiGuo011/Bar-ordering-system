@@ -1,5 +1,6 @@
 package co.yixiang.yshop.module.member.dal.dataobject.user;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,4 +27,11 @@ public class RechargeOrderDO {
     private Integer payStatus;
     private LocalDateTime payTime;
     private LocalDateTime createTime;
+
+    @TableField(exist = false)
+    private String nickname;
+
+    @TableField(exist = false)
+    private String mobile;
+
 }

@@ -8,4 +8,30 @@
     <select id="selectEnableList" resultType="co.yixiang.yshop.module.member.dal.dataobject.user.RechargePackageDO">
         select * from recharge_package where status = 1 order by sort asc
     </select>
+    <select id="selectPage" resultType="co.yixiang.yshop.module.member.dal.dataobject.user.RechargePackageDO">
+        select * from recharge_package
+        <where>
+            <if test="reqVO.vipLevel != null and reqVO.vipLevel != ''">
+                and vip_level like concat('%', #{reqVO.vipLevel}, '%')
+            </if>
+            <if test="reqVO.status != null">
+                and status = #{reqVO.status}
+            </if>
+        </where>
+        order by sort asc, id desc
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into recharge_package(amount, gift_amount, grow_value, vip_level, sort, status)
+        values(#{amount}, #{giftAmount}, #{growValue}, #{vipLevel}, #{sort}, #{status})
+    </insert>
+    <update id="update">
+        update recharge_package
+        set amount = #{amount},
+            gift_amount = #{giftAmount},
+            grow_value = #{growValue},
+            vip_level = #{vipLevel},
+            sort = #{sort},
+            status = #{status}
+        where id = #{id}
+    </update>
 </mapper>
