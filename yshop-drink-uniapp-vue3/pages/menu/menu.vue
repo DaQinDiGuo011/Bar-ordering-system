@@ -89,6 +89,10 @@
 											<view class="right">
 												<text class="name">{{ good.storeName }}</text>
 												<text class="tips">{{ good.storeInfo }}</text>
+												<view class="good-meta">
+												  <text class="meta-item">销量：{{ good.sales || 0 }}</text>
+												  <text class="meta-item">库存：{{ good.stock || 0 }}</text>
+												</view>
 												<view class="price_and_action">
 													<text class="price">￥{{ good.price }}</text>
 													<view class="btn-group" v-if="good.stock > 0">
@@ -1178,7 +1182,6 @@ page {
 
 								.name {
 									width: 100%;
-									margin-bottom: $menu-gap-sm;
 									font-size: $font-size-base;
 									@include text-ellipsis;
 								}
@@ -1186,7 +1189,6 @@ page {
 								.tips {
 									width: 100%;
 									height: 40rpx;
-									margin-bottom: $menu-gap-sm;
 									font-size: $font-size-sm;
 									line-height: 40rpx;
 									color: $text-color-assist;
@@ -1583,7 +1585,17 @@ page {
 	width: $img-size-lg;
 	height: $img-size-lg;
 }
+.good-meta {
+	display: flex;
+	gap: 24rpx;
+	width: 100%;
+	font-size: 22rpx;
+	color: $text-color-assist;
+	margin-bottom: $menu-gap-sm;
+	.meta-item {
 
+	}
+}
 .bottom-spacer {
 	height: 110rpx;
 }
