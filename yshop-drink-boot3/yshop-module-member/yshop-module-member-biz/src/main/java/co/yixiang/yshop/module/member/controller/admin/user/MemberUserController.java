@@ -2,6 +2,7 @@ package co.yixiang.yshop.module.member.controller.admin.user;
 
 import co.yixiang.yshop.framework.common.pojo.CommonResult;
 import co.yixiang.yshop.framework.common.pojo.PageResult;
+import co.yixiang.yshop.module.coupon.service.couponuser.CouponUserService;
 import co.yixiang.yshop.module.member.controller.admin.user.vo.*;
 import co.yixiang.yshop.module.member.controller.app.user.vo.TopPointsVO;
 import co.yixiang.yshop.module.member.convert.user.UserConvert;
@@ -37,6 +38,9 @@ public class MemberUserController {
     private UserService userService;
     @Resource
     private SysPasswordConfigServiceImpl passwordConfigService;
+
+    @Resource
+    private CouponUserService couponUserService;
 
     @Resource
     private MemberUserService memberUserService;
@@ -84,7 +88,10 @@ public class MemberUserController {
     @PreAuthorize("@ss.hasPermission('member:user:query')")
     public CommonResult<UserRespVO> getUser(@RequestParam("id") Long id) {
         MemberUserDO user = userService.getUser(id);
-        return success(UserConvert.INSTANCE.convert(user,true));
+        Integer couponNumb = couponUserService.getUserusableCouponNum(id);
+        UserRespVO respVO = UserConvert.INSTANCE.convert(user,true);
+        respVO.setUsableCouponNum(couponNumb);
+        return success(respVO);
     }
 
     @GetMapping("/list")

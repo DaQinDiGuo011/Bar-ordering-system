@@ -67,8 +67,8 @@
             <el-radio :label="0">下架</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="商品简介" prop="store_info">
-          <el-input type="textarea" rows="5"  v-model="formValidate.store_info" placeholder="请输入商品简介" />
+        <el-form-item label="赠送商品" prop="store_info">
+          <el-input type="textarea" rows="5"  v-model="formValidate.store_info" placeholder="请输入赠送商品内容" />
         </el-form-item>
       </el-tab-pane>
       <el-tab-pane label="商品规格" name="two">

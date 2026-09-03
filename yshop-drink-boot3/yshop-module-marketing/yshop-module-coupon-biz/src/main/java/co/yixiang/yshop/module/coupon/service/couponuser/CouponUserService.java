@@ -67,4 +67,11 @@ public interface CouponUserService {
      */
     List<CouponUserDO> getUserList(CouponUserExportReqVO exportReqVO);
 
+    /**
+     * 获取用户未使用优惠券数量
+     * @param userId
+     * @return
+     */
+    Integer getUserusableCouponNum(Long userId);
+
 }

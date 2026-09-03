@@ -16,4 +16,5 @@ public class UserRespVO extends UserBaseVO {
     @Schema(description = "添加时间")
     private LocalDateTime createTime;
 
+    private Integer usableCouponNum;
 }

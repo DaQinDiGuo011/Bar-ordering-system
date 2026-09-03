@@ -11,8 +11,14 @@
 			<!-- <view>
 				<image :src="shopAd" mode="aspectFill" class="w-100 " style="height: 250rpx;"></image>
 			</view> -->
-			<view class="notice-bar" v-if="store.notice">
-					<uv-notice-bar  :text="store.notice"></uv-notice-bar>
+			<view class="notice-bar">
+				<uv-notice-bar  v-if="store.notice" :text="store.notice"></uv-notice-bar>
+				<view v-else class="no-notice-text">
+					<view style="display: inline-block; margin-left: 20rpx;">
+						<uv-icon name="bell" size="14" color="#7d0d0d"></uv-icon>
+					</view>
+					商家暂无公告
+				</view>
 			</view>
 		<view class="main">
 			<view class="nav">
@@ -21,7 +27,7 @@
 					<view class="left" v-if="orderType == 'takein'">
 						<view class="store-name">
 							<text>{{ store.name }}</text>
-							<view class="iconfont iconarrow-right"></view>
+							<!-- <view class="iconfont iconarrow-right"></view> -->
 						</view>
 						<!-- <view class="store-location">
 							<text>距离您 {{kmUnit(store.dis)}}</text>
@@ -88,7 +94,8 @@
 												@tap="showGoodDetailModal(item, good)"></image>
 											<view class="right">
 												<text class="name">{{ good.storeName }}</text>
-												<text class="tips">{{ good.storeInfo }}</text>
+												<text class="tips" v-if="good.storeInfo" style="padding: 0 5px;">{{ good.storeInfo }}</text>
+												<text class="tips" v-else></text>
 												<view class="good-meta">
 												  <text class="meta-item">销量：{{ good.sales || 0 }}</text>
 												  <text class="meta-item">库存：{{ good.stock || 0 }}</text>
@@ -123,17 +130,25 @@
 				</view>
 				<!-- content end -->
 				<!-- 购物车栏 begin -->
-				<view class="cart-box" v-if="cart.length > 0 && isCartShow">
+				<view class="cart-box" v-if="isCartShow">
 					<!-- 购物车图标 + 角标 -->
 					<view class="mark" @tap="openCartPopup">
-						<image src="/static/images/menu/cart.png" class="cart-img"></image>
+						<image src="/static/images/menu/cart.png" class="cart-img" :class="{'cart-empty': cart.length === 0}"></image>
 						<view class="tag" v-if="getCartGoodsNumber > 0">{{ getCartGoodsNumber }}</view>
 					</view>
 					<!-- 中间总价 -->
-					<view class="total-price">￥{{ getCartGoodsPrice }}</view>
+					<view class="total-price" v-if="cart.length > 0">￥{{ getCartGoodsPrice }}</view>
+					<view class="total-price empty-tip" v-else>未选购商品</view>
 					<!-- 右侧结算按钮 -->
-					<button type="primary" class="pay-btn" @tap="toPay" :disabled="disabledPay">
-						{{ disabledPay ? `差${spread}元起送` : '去结算' }}
+					<button 
+						type="primary" 
+						class="pay-btn" 
+						@tap="toPay" 
+						:disabled="disabledPay || cart.length === 0">
+						<template v-if="cart.length > 0">
+							{{ disabledPay ? `差${spread}元起送` : '去结算' }}
+						</template>
+						<template v-else>去下单</template>
 					</button>
 				</view>
 				<!-- 购物车栏 end -->
@@ -563,7 +578,7 @@ const getShopList = async(res) => {
 		});
 		if (shop) {
 			//广告图
-			getAds(shop.id);
+			// getAds(shop.id);
 	
 			shop.notice = shop.status == 1 ? shop.notice : '店铺营业时间为:' + formatDateTime(shop.startTime,'hh:mm')+' - '+formatDateTime(shop.endTime,'hh:mm') +
 			'，不在营业时间内无法下单';
@@ -789,7 +804,10 @@ const handleAddToCartInModal = () => {
 	closeGoodDetailModal()
 }
 const openCartPopup = () => { //打开/关闭购物车列表popup
-	popup.value.open()
+	if(cart.value.length > 0){
+		popup.value.open()
+	}
+	
 }
 const handleCartClear = () => { //清空购物车
 	uni.showModal({
@@ -1193,11 +1211,13 @@ page {
 								}
 
 								.tips {
-									width: 100%;
+									background-color: #ffe2e2;
+									display: inline-block;
+									width: auto;
+									color: #fb4500;
 									height: 40rpx;
 									font-size: $font-size-sm;
 									line-height: 40rpx;
-									color: $text-color-assist;
 									@include text-ellipsis;
 								}
 
@@ -1468,6 +1488,10 @@ page {
 			width: 88rpx;
 			height: 88rpx;
 		}
+    // 空购物车图标透明度
+		.cart-empty {
+			opacity: 0.4;
+		}
 		.tag {
 			position: absolute;
 			top: -8rpx;
@@ -1489,6 +1513,10 @@ page {
 		padding: 0 20rpx;
 		font-size: 32rpx;
 		font-weight: 600;
+    &.empty-tip {
+      color:#999;
+      font-weight:normal;
+    }
 	}
 
 	.pay-btn {
@@ -1497,6 +1525,10 @@ page {
 		line-height: 88rpx;
 		border-radius: 0;
 		margin: 0;
+    // 按钮置灰样式，uni-app button disabled生效
+    &[disabled] {
+      opacity:0.55 !important;
+    }
 	}
 }
 
@@ -1607,7 +1639,12 @@ page {
 	height: 60rpx;
 	background-color: $text-color-white;
 }
-
+.no-notice-text{
+	font-size: 14px;
+	height: 25px;
+	line-height: 25px;
+	color: #7d0d0d;
+}
 .store-header-img {
 	width: $img-size-lg;
 	height: $img-size-lg;

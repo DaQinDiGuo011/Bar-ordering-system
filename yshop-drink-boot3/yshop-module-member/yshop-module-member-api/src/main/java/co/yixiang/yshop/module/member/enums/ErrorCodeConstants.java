@@ -28,4 +28,8 @@ public interface ErrorCodeConstants {
     ErrorCode COUPON_NOT_CONDITION = new ErrorCode(1004004003, "此优惠券不满足使用提交");
     ErrorCode MINI_AUTH_LOGIN_BAD2 = new ErrorCode(1004004002, "登录失败，请返回首页刷新重新登录");
 
+    ErrorCode COUPON_INVALID = new ErrorCode(1004004004, "此优惠券已过有效日期");
+
+    ErrorCode COUPON_NOT_AVAILABLE = new ErrorCode(1004004004, "此优惠券已已使用过了");
+
 }

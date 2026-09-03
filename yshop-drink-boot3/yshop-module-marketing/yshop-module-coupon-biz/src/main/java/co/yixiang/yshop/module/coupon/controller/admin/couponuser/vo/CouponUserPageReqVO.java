@@ -61,8 +61,8 @@ public class CouponUserPageReqVO extends PageParam {
     @Schema(description = "用户id", example = "20961")
     private Integer userId;
 
-    @Schema(description = "已使用:0=否,1=是", example = "1")
-    private Boolean status;
+    @Schema(description = "已使用:0=否,1=是,2-已失效", example = "1")
+    private Integer status;
 
     @Schema(description = "优惠券id", example = "23870")
     private Integer couponId;

@@ -81,8 +81,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static co.yixiang.yshop.framework.common.exception.util.ServiceExceptionUtil.exception;
-import static co.yixiang.yshop.module.member.enums.ErrorCodeConstants.COUPON_NOT_CONDITION;
-import static co.yixiang.yshop.module.member.enums.ErrorCodeConstants.USER_ADDRESS_NOT_EXISTS;
+import static co.yixiang.yshop.module.member.enums.ErrorCodeConstants.*;
 import static co.yixiang.yshop.module.order.enums.ErrorCodeConstants.*;
 
 /**
@@ -231,11 +230,19 @@ public class AppStoreOrderServiceImpl extends ServiceImpl<StoreOrderMapper,Store
             if(storeShopDO.getCouponUseNumLimit() != 0 && storeShopDO.getCouponUseNumLimit() < param.getCouponIdList().size()){
                 throw exception(STORE_COUPON_NUMBER_LIMIT);
             }
+            LocalDateTime now = LocalDateTime.now();
+
             for(String couponId :param.getCouponIdList()){
                 CouponUserDO couponUserDO = appCouponUserService.getById(couponId);
                 if(couponUserDO != null){
                     if(couponUserDO.getLeast().compareTo(sumPrice) > 0) {
                         throw exception(COUPON_NOT_CONDITION);
+                    }
+                    if(couponUserDO.getStatus() == 2 || couponUserDO.getEndTime().isBefore(now)){
+                        throw exception(COUPON_INVALID);
+                    }
+                    if(couponUserDO.getStatus() == 1){
+                        throw exception(COUPON_NOT_AVAILABLE);
                     }
                     couponPrice = couponPrice.add(couponUserDO.getValue());
 

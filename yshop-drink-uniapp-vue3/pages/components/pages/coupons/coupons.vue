@@ -12,14 +12,24 @@
 		<view class="tab-header coupons-tabbar">
 			<view 
 				class="tab-item" 
-				:class="{active:activeTab===0}"
-				@click="activeTab=0"
-			>未使用优惠券</view>
+				:class="{active:activeTab===4}"
+				@click="activeTab=4"
+			>全部</view>
+			<view 
+			  class="tab-item" 
+			  :class="{active:activeTab===0}"
+			  @click="activeTab=0"
+			>未使用</view>
 			<view 
 			  class="tab-item" 
 			  :class="{active:activeTab===1}"
 			  @click="activeTab=1"
-			>已使用优惠券</view>
+			>已使用</view>
+			<view 
+			  class="tab-item" 
+			  :class="{active:activeTab===2}"
+			  @click="activeTab=2"
+			>已失效</view>
 		</view>
 
 		<view class="empty" v-if="list.length===0 && !loading">
@@ -63,7 +73,7 @@
 									</view>
 									<view class="coupons-ticket__type">{{ item.title }}</view>
 									<view class="coupons-ticket__date u-line-1">
-										{{formatDateTime(item.startTime, 'yyyy-MM-dd')}}‑{{formatDateTime(item.endTime, 'yyyy-MM-dd')}}
+										{{formatDateTime(item.startTime, 'yyyy-MM-dd')}}至{{formatDateTime(item.endTime, 'yyyy-MM-dd')}}
 									</view>
 								</view>
 							</view>
@@ -95,7 +105,7 @@
 			<view class="d-flex font-size-sm text-color-base mb-20">
 				券价值：满{{ coupon.least }}减{{ coupon.value }}
 			</view>
-			<view class="d-flex font-size-sm text-color-base mb-20" v-if="activeTab == 1">
+			<view class="d-flex font-size-sm text-color-base mb-20">
 				每人限领：{{ coupon.limit }} 张
 			</view>
 			<view class="d-flex font-size-sm text-color-base mb-20">
@@ -119,7 +129,8 @@ import { storeToRefs } from 'pinia'
 const main = useMainStore()
 const { loginValueFlag } = storeToRefs(main)
 
-const activeTab = ref(0) // 0未使用(包含未使用+已失效)，1已使用
+// 0全部 1未使用(默认) 2已使用 3已失效
+const activeTab = ref(0)
 const list = ref([])
 
 const page = ref(1)
@@ -270,7 +281,7 @@ page {
 
 .scroll-inner{
 	padding:20rpx;
-	padding-bottom: calc(env(safe-area-inset-bottom) + 170rpx);
+	padding-bottom: calc(env(safe-area-inset-bottom) + 60rpx);
 }
 
 /* 券卡片基础 */
@@ -404,7 +415,7 @@ page {
 }
 /* 2 已失效：置灰 + 斜水印 */
 .coupons-item--expired {
-	filter:grayscale(80%);
+	filter:grayscale(80);
 }
 .coupons-item--expired .coupons-ticket__amount{
 	color:#999;

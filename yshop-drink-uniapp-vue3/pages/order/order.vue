@@ -372,7 +372,7 @@ $order-thumb-radius: 8rpx;
 }
 .scroll-inner{
 	padding: $order-list-padding-x;
-	padding-bottom: calc(env(safe-area-inset-bottom) + 100rpx);
+	padding-bottom: calc(env(safe-area-inset-bottom) + 50rpx);
 }
 
 .order-item {

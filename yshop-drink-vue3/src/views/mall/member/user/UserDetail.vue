@@ -96,6 +96,7 @@
               <el-select v-model="couponQuery.status" placeholder="全部状态" clearable style="width:160px">
                 <el-option label="未使用" :value="0" />
                 <el-option label="已使用" :value="1" />
+                <el-option label="已失效" :value="2" />
               </el-select>
             </el-form-item>
             <el-form-item>
@@ -130,6 +131,7 @@
               <template #default="scope">
                 <el-tag v-if="scope.row.status ===0" type="success">未使用</el-tag>
                 <el-tag v-else-if="scope.row.status ===1" type="info">已使用</el-tag>
+                <el-tag v-else-if="scope.row.status ===2" type="info">已失效</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="优惠券ID" align="center" prop="couponId" width="70"/>

@@ -54,7 +54,7 @@ public class AppCouponUserServiceImpl extends ServiceImpl<CouponUserMapper, Coup
                 wrapper.eq(CouponUserDO::getStatus,CouponStatusEnum.STATUS_1.getValue());
                 break;
             case STATUS_2:
-                wrapper.lt(CouponUserDO::getEndTime,nowTime);
+                wrapper.eq(CouponUserDO::getStatus,CouponStatusEnum.STATUS_2.getValue());
                 break;
             default:
                 log.warn("为了遵循阿里巴巴规范");

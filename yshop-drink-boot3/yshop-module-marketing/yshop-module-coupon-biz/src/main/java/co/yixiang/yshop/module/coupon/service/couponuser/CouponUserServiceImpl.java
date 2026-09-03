@@ -1,6 +1,7 @@
 package co.yixiang.yshop.module.coupon.service.couponuser;
 
 import co.yixiang.yshop.framework.common.pojo.PageResult;
+import co.yixiang.yshop.framework.mybatis.core.query.LambdaQueryWrapperX;
 import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserCreateReqVO;
 import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserExportReqVO;
 import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserPageReqVO;
@@ -8,6 +9,7 @@ import co.yixiang.yshop.module.coupon.controller.admin.couponuser.vo.CouponUserU
 import co.yixiang.yshop.module.coupon.convert.couponuser.CouponUserConvert;
 import co.yixiang.yshop.module.coupon.dal.dataobject.couponuser.CouponUserDO;
 import co.yixiang.yshop.module.coupon.dal.mysql.couponuser.CouponUserMapper;
+import co.yixiang.yshop.module.coupon.enums.CouponStatusEnum;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -86,6 +88,15 @@ public class CouponUserServiceImpl implements CouponUserService {
     @Override
     public List<CouponUserDO> getUserList(CouponUserExportReqVO exportReqVO) {
         return userMapper.selectList(exportReqVO);
+    }
+
+    @Override
+    public Integer getUserusableCouponNum(Long userId) {
+        LambdaQueryWrapperX<CouponUserDO> wrapper = new LambdaQueryWrapperX<>();
+        wrapper.eq(CouponUserDO::getUserId, userId);
+        wrapper.eq(CouponUserDO::getStatus, CouponStatusEnum.STATUS_0.getValue());
+        Long numb = userMapper.selectCount(wrapper);
+        return Math.toIntExact(numb);
     }
 
 }

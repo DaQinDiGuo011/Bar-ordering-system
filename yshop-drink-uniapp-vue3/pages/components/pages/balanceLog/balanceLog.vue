@@ -3,7 +3,7 @@
 	<uv-navbar
 		:fixed="true"
 	  	bgColor="#ffffff"
-	  	title="余额明细"
+	  	title="交易明细"
 	  	left-arrow
 	  	:placeholder="true"
 	  @leftClick="$onClickLeft"/>
@@ -21,9 +21,9 @@
 			>收入</view>
 		</view>
 
-		<view class="stat-text">
+		<!-- <view class="stat-text">
 			{{activeTab===0 ? `我的余额:¥${balance} 累计支出:¥${payTotal}` : `累计充值:¥${rechargeTotal} 累计赠送:¥${giftTotal}`}}
-		</view>
+		</view> -->
 
 		<view class="empty" v-if="list.length===0 && !loading">
 			<view class="empty-text">暂无相关内容~</view>
@@ -266,6 +266,6 @@ page {
 	color:#999;
 }
 .scroll-inner{
-	padding-bottom: calc(env(safe-area-inset-bottom) + 170rpx);
+	padding-bottom: calc(env(safe-area-inset-bottom) + 60rpx);
 }
 </style>

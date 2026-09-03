@@ -28,6 +28,8 @@
 					  imgMode="aspectFill"
 					  keyName="image"
 					  :list="listAds"
+					  :indicator="true"
+					  indicatorInactiveColor="#06002d"
 					  indicatorMode="dot"
 					  indicatorStyle="bottom"
 					></uv-swiper>
