@@ -124,11 +124,14 @@
 				<!-- content end -->
 				<!-- 购物车栏 begin -->
 				<view class="cart-box" v-if="cart.length > 0 && isCartShow">
-					<view class="mark">
-						<image src="/static/images/menu/cart.png" class="cart-img" @tap="openCartPopup"></image>
-						<view class="tag">{{ getCartGoodsNumber }}</view>
+					<!-- 购物车图标 + 角标 -->
+					<view class="mark" @tap="openCartPopup">
+						<image src="/static/images/menu/cart.png" class="cart-img"></image>
+						<view class="tag" v-if="getCartGoodsNumber > 0">{{ getCartGoodsNumber }}</view>
 					</view>
-					<view class="price" @tap="openCartShow">￥{{ getCartGoodsPrice }}</view>
+					<!-- 中间总价 -->
+					<view class="total-price">￥{{ getCartGoodsPrice }}</view>
+					<!-- 右侧结算按钮 -->
 					<button type="primary" class="pay-btn" @tap="toPay" :disabled="disabledPay">
 						{{ disabledPay ? `差${spread}元起送` : '去结算' }}
 					</button>
@@ -194,38 +197,41 @@
 			</modal>
 			<!-- 商品详情模态框 end -->
 			<!-- 购物车详情popup -->
-			<uv-popup ref="popup" mode="bottom" class="cart-popup">
-				<template v-slot:default>
-					<view  class="cart-popup">
-						<view class="top">
-							<text @tap="handleCartClear">清空</text>
-						</view>
-						<scroll-view class="cart-list" scroll-y>
-						    <view class="wrapper">
-								<view class="item" v-for="(item, index) in cart" :key="index">
-									<view class="left">
-										<view class="name">{{ item.name }}</view>
-										<view class="props">{{ item.valueStr }}</view>
-									</view>
-									<view class="center">
-										<text>￥{{ item.price }}</text>
-									</view>
-									<view class="right">
-										<button type="default" plain size="mini" class="btn" hover-class="none"
-										  @tap="handleCartItemReduce(index)">
-											<view class="iconfont iconsami-select"></view>
-										</button>
-										<view class="number">{{ item.number }}</view>
-											<button type="primary" class="btn" size="min" hover-class="none"
-											@tap="handleCartItemAdd(index)">
-												<view class="iconfont iconadd-select"></view>
-											</button>
-										</view>
-									</view>
-							</view>
-						</scroll-view>
-					</view>
-				</template>
+			<uv-popup 
+			  ref="popup" 
+			  mode="bottom" 
+			  class="cart-popup-wrap"
+			  :safeAreaInsetBottom="false"
+			  :mask-close-able="true"
+			  z-index="9997"
+			>
+			  <template v-slot:default>
+			    <view class="cart-popup">
+			      <view class="popup-header">
+			        <text class="title">已选商品</text>
+			        <text class="clear-text" @tap="handleCartClear">清空购物车</text>
+			      </view>
+			      <scroll-view class="cart-list" scroll-y>
+			        <view class="wrapper">
+			          <view class="item" v-for="(item, index) in cart" :key="index">
+			            <!-- 左侧商品图片 -->
+			            <image class="item-img" :src="item.image" mode="aspectFill"></image>
+			            <view class="item-body">
+			              <view class="name">{{ item.name }}</view>
+			              <view class="props">{{ item.valueStr }}</view>
+			            </view>
+			            <view class="item-price">￥{{ item.price }}</view>
+			            <!-- 加减控件 圆形黑按钮 -->
+			            <view class="qty-control">
+			              <view class="qty-btn reduce" @tap="handleCartItemReduce(index)">−</view>
+			              <text class="qty-num">{{ item.number }}</text>
+			              <view class="qty-btn add" @tap="handleCartItemAdd(index)">+</view>
+			            </view>
+			          </view>
+			        </view>
+			      </scroll-view>
+			    </view>
+			  </template>
 			</uv-popup>
 			   <!-- 购物车详情popup -->
 			<uv-toast ref="uToast"></uv-toast>
@@ -1440,138 +1446,159 @@ page {
 	
 .cart-box {
 	position: fixed;
-	bottom: $spacing-row-lg;
-	/* #ifdef H5 */
-	bottom: var(--window-bottom);
-	/* #endif */
-	left: $spacing-row-lg;
-	right: $spacing-row-lg;
-	z-index: 9999;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 9999 !important;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	height: $menu-cart-height;
-	background-color: $text-color-white;
-	border-radius: $menu-radius-cart;
-	box-shadow: $menu-shadow-cart;
-
-	.cart-img {
-		position: relative;
-		width: $menu-cart-height;
-		height: $menu-cart-height;
-		margin-top: calc(-1 * #{$menu-cart-height} / 2);
-	}
-
-	.pay-btn {
-		display: flex;
-		align-items: center;
-		height: 100%;
-		padding: 0 $spacing-row-lg;
-		font-size: $font-size-base;
-		color: $text-color-white;
-		border-radius: 0 50rpx 50rpx 0;
-	}
+	height: 120rpx;
+	background-color: #ffffff;
+	padding: 0 30rpx;
+	box-sizing: border-box;
+	/* #ifdef H5 */
+	padding-bottom: var(--window-bottom);
+	/* #endif */
 
 	.mark {
 		position: relative;
-		margin-right: $spacing-row-lg;
-		padding-left: 46rpx;
-
+		width: 88rpx;
+		height: 88rpx;
+		.cart-img {
+			width: 88rpx;
+			height: 88rpx;
+		}
 		.tag {
 			position: absolute;
-			top: -50rpx;
-			right: -10rpx;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			width: $menu-tag-size;
-			height: $menu-tag-size;
-			padding: 4rpx;
-			font-size: $font-size-sm;
-			color: $text-color-white;
+			top: -8rpx;
+			right: 0;
+			min-width: 36rpx;
+			height: 36rpx;
+			line-height: 36rpx;
+			text-align: center;
+			font-size: 22rpx;
+			color: #fff;
 			background-color: $color-primary;
-			border-radius: $border-radius-circle;
-			opacity: 0.9;
+			border-radius: 100rpx;
+			padding: 0 8rpx;
 		}
 	}
 
-	.price {
+	.total-price {
 		flex: 1;
-		color: $text-color-base;
+		padding: 0 20rpx;
+		font-size: 32rpx;
+		font-weight: 600;
+	}
+
+	.pay-btn {
+		width: 240rpx;
+		height: 88rpx;
+		line-height: 88rpx;
+		border-radius: 0;
+		margin: 0;
 	}
 }
 
-.cart-popup {
-	margin-bottom: 30px;
+.cart-popup-wrap {
+  // uv-popup生成的弹出容器
+  .uv-popup__content {
+    // 总屏幕高度 - 底部cart-box高度(120rpx)
+    max-height: calc(100vh - 120rpx) !important;
+    overflow: hidden;
+  }
 }
+
 .cart-popup {
-	
-	.top {
-		padding: $menu-gap-sm $spacing-row-lg;
-		font-size: $font-size-sm;
-		text-align: right;
-		color: $menu-secondary-color;
-		background-color: $bg-color-primary;
+	background-color: #fff;
+	border-radius: 24rpx 24rpx 0 0;
+	max-height: calc(100vh - 120rpx);
+	margin-bottom: 120rpx;
+	.popup-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 32rpx 30rpx 20rpx;
+		border-bottom: 1rpx solid #eee;
+
+		.title {
+			font-size: 32rpx;
+			font-weight: 500;
+		}
+		.clear-text {
+			font-size: 28rpx;
+			color: #999;
+		}
 	}
 
 	.cart-list {
-		width: 100%;
-		min-height: 1vh;
-		max-height: var(--menu-cart-popup-max-height);
-		overflow: hidden;
-		background-color: $text-color-white;
+		max-height: calc(calc(100vh - 120rpx) - 100rpx);
+		overflow-y: auto;
 
 		.wrapper {
-			display: flex;
-			flex-direction: column;
-			height: 100%;
-			padding: 0 $spacing-row-lg;
-			margin-bottom: $menu-cart-list-bottom;
+			padding: 0 30rpx;
+		}
 
-			.item {
-				position: relative;
+		.item {
+			display: flex;
+			align-items: center;
+			padding: 30rpx 0;
+			border-bottom: 1rpx solid #eee;
+
+			.item-img {
+				width: 120rpx;
+				height: 120rpx;
+				border-radius: 12rpx;
+				margin-right: 24rpx;
+				flex-shrink: 0;
+			}
+
+			.item-body {
+				flex: 1;
+				.name {
+					font-size: 30rpx;
+					color: #222;
+				}
+				.props {
+					font-size: 26rpx;
+					color: #888;
+					margin-top: 8rpx;
+				}
+			}
+
+			.item-price {
+				font-size: 30rpx;
+				margin: 0 24rpx;
+			}
+
+			.qty-control {
 				display: flex;
 				align-items: center;
-				justify-content: space-between;
-				padding: $spacing-row-lg 0;
-				@include list-divider;
-
-				.left {
-					flex: 1;
-					display: flex;
-					flex-direction: column;
-					margin-right: $spacing-row-lg;
-					overflow: hidden;
-
-					.name {
-						font-size: $font-size-sm;
-						color: $text-color-base;
-					}
-
-					.props {
-						font-size: $font-size-sm;
-						color: $text-color-assist;
-						@include text-ellipsis;
-					}
+				.qty-btn {
+					width: 56rpx;
+					height: 56rpx;
+					border-radius: 100rpx;
+					background-color: #000000;
+					color: #ffffff;
+					text-align: center;
+					line-height: 56rpx;
+					font-size: 36rpx;
 				}
-
-				.center {
-					margin-right: $menu-cart-price-offset;
-					font-size: $font-size-base;
-				}
-
-				.right {
-					display: flex;
-					align-items: center;
-					justify-content: space-between;
-					@include quantity-control(var(--menu-control-size));
-
-					.btn {
-						font-size: $font-size-base;
-					}
+				.qty-num {
+					width: 70rpx;
+					text-align: center;
+					font-size: 30rpx;
 				}
 			}
 		}
+	}
+
+	.pack-fee-row {
+		display: flex;
+		justify-content: space-between;
+		padding: 24rpx 30rpx 40rpx;
+		font-size: 28rpx;
+		color: #666;
 	}
 }
 
