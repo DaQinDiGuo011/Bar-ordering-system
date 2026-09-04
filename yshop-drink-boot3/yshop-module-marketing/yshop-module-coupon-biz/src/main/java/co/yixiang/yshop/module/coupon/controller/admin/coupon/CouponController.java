@@ -56,7 +56,7 @@ public class CouponController {
 
     @PostMapping("/distributeUser")
     @Operation(summary = "分配一人一券优惠券")
-    @PreAuthorize("@ss.hasPermission('coupon::distributeUser')")
+//    @PreAuthorize("@ss.hasPermission('coupon::distributeUser')")
     public CommonResult<Boolean> distributeUser(@Valid @RequestBody CouponUpdateReqVO updateReqVO) {
         SysPasswordConfigVO configVO = passwordConfigService.getByType(BusiPwdEnum.COUPON_ALLO.getValue());
         if(configVO != null && StringUtils.isNotBlank(configVO.getPasswordValue()) && !configVO.getPasswordValue().equals(updateReqVO.getPwd())){
