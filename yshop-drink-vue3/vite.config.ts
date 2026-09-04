@@ -135,6 +135,21 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
             })
           }
         }, 
+        ['/infra/job']: {
+          target: 'http://localhost:48081/admin-api',
+          ws: false,
+          changeOrigin: true,
+          // rewrite: (path) => path.replace(new RegExp(`^/`), '/'),
+          configure: (proxy, options) => {
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('[Vite Proxy] 原始路径:', req.url);
+              console.log('[Vite Proxy] 转发目标:', options.target + proxyReq.path);
+            })
+            proxy.on('error', (err) => {
+              console.error('[Vite Proxy 异常]', err);
+            })
+          }
+        }, 
         '/infra/ws': {
           target: 'http://127.0.0.1:48081',
           ws: true, // ✅开启websocket代理，核心！

@@ -13549,3 +13549,6 @@ INSERT INTO `yshop_wechat_template` VALUES (17, 'pay_success', '订单支付成�
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- 需要在页面加这条数据，还关联其他表 Coupon user expire job, run daily at 00:05
+INSERT INTO `infra_job` VALUES (17, '优惠券到期自动失效', 1, 'couponUserExpireJob', NULL, '0 5 0 * * ?', 0, 0, 0, '1', NOW(), '1', NOW(), b'0');

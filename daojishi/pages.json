@@ -5,6 +5,15 @@
 			"style": {
 				"navigationBarTitleText": "uni-app"
 			}
+		},
+		{
+			"path": "pages/countdown/countdown",
+			"style": {
+				"navigationBarTitleText": "custom",
+				"app-plus": {
+				      "titleNView": false
+				    }
+			}
 		}
 	],
 	"globalStyle": {
