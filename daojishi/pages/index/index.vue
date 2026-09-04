@@ -106,7 +106,8 @@ const goCountDown = ()=>{
   }
   // 将选中的区域通过url参数传给倒计时页面
   uni.navigateTo({
-    url:`/pages/countdown/countdown?zone=${selectZone.value}`
+    // url:`/pages/countdown/countdown?zone=${selectZone.value}`
+	url:`/pages/game/game?zone=${selectZone.value}`
   })
 }
 </script>

@@ -12,8 +12,18 @@
 
     <!-- 倒计时主体 -->
     <view class="timer-area">
-      <view class="count-text">{{ timeDisplay }}</view>
-    </view>
+		<template v-if="isGameStart">
+			<!-- 游戏进行中：大字体 -->
+			<view class="count-text">{{ timeDisplay }}</view>
+		</template>
+		<template v-else>
+			<!-- 开赛倒计时：标题+数字分开 -->
+			<view class="count-wrap">
+			  <view class="count-title">开赛倒计时</view>
+			  <view class="count-num">{{ formatHms(waitRemainSec) }}</view>
+			</view>
+		</template>
+	</view>
 
     <view class="divider-bar"></view>
 
@@ -90,12 +100,10 @@ const perPersonPoints = ref(1000) //每人积分
 const currentLv = ref(0)
 const totalSeconds = ref(0)
 let timerInterval = ref(null)
-let waitTimeInterval = ref(null) //【改动1】等待20:30的轮询定时器
+let waitTimeInterval = ref(null)
 
 const isPause = ref(false)
-//【新增1】标记是否已经开赛
 const isGameStart = ref(false)
-//【新增2】距离开赛剩余秒数
 const waitRemainSec = ref(0)
 
 const timeDisplay = ref("00:00")
@@ -103,21 +111,28 @@ const currBlind = ref("0/0")
 const currAnte = ref("-")
 const nextBlind = ref("0/0")
 const nextAnte = ref("-")
-const pauseText = ref("⏸ Pause timer")
+const pauseText = ref("▶ Start timer")
 
-// 格式化时间
+// 游戏内等级倒计时：分:秒 mm:ss
 const formatTime = (s) => {
   const m = Math.floor(s / 60)
   const sec = s % 60
   return String(m).padStart(2, "0") + ":" + String(sec).padStart(2, "0")
 }
 
+// 开赛倒计时：时:分:秒 HH:mm:ss
+const formatHms = (totalSec) => {
+  const h = Math.floor(totalSec / 3600)
+  const m = Math.floor((totalSec % 3600) / 60)
+  const s = totalSec % 60
+  return [h, m, s].map(n => String(n).padStart(2, "0")).join(":")
+}
+
 const updateTime = () => {
 	if(isGameStart.value){
       timeDisplay.value = formatTime(totalSeconds.value)
     }else{
-      // 未开赛：显示距离开赛倒计时
-      timeDisplay.value = "开赛倒计时：" + formatTime(waitRemainSec.value)
+      timeDisplay.value = "开赛倒计时：" + formatHms(waitRemainSec.value)
     }
 }
 
@@ -164,16 +179,24 @@ const levelEnd = () => {
   loadLevel()
 }
 
-// 暂停/继续
+// ==========【核心修改】togglePause逻辑 ==========
 const togglePause = () => {
-	if(!isGameStart.value) return
+  // 未开赛：点击直接手动开赛
+  if (!isGameStart.value) {
+    clearInterval(waitTimeInterval.value)
+    isGameStart.value = true
+    isPause.value = false
+    pauseText.value = "⏸ Pause timer"
+    loadLevel()
+    return
+  }
+  // 已开赛：正常暂停/继续
   isPause.value = !isPause.value
   pauseText.value = isPause.value ? "▶ Continue timer" : "⏸ Pause timer"
 }
 
 // 上一级
 const prevLevel = () => {
-	// if(!isGameStart.value) return
   if (currentLv.value > 0) {
     currentLv.value--
     loadLevel()
@@ -182,14 +205,13 @@ const prevLevel = () => {
 
 // 下一级
 const nextLevel = () => {
-	// if(!isGameStart.value) return
   if (currentLv.value < levelConfig.value.length - 1) {
     currentLv.value++
     loadLevel()
   }
 }
 
-//【新增3】计算距离15:45还剩多少秒
+// 计算距离目标时间还剩多少秒
 const calcWaitSeconds = () => {
   const now = new Date()
   const target = new Date()
@@ -202,28 +224,25 @@ const calcWaitSeconds = () => {
   return diff
 }
 
-//【改动2】判断是否到达20:30
 const isTargetTimeReached = () => {
   const now = new Date()
   const hour = now.getHours()
   const minute = now.getMinutes()
-  // 晚上八点半：20点30分
   return hour > 17 || (hour === 17 && minute >= 0)
 }
 
-//【改动3】等待定时任务：等到20:30自动启动倒计时
 const waitUntilTargetTime = () => {
-  // 已经到时间直接启动
   if(isTargetTimeReached()){
 	  isGameStart.value = true
+    pauseText.value = "⏸ Pause timer"
     loadLevel()
     return
   }
-  // 没到时间，每秒轮询检测系统时间
   waitTimeInterval.value = setInterval(()=>{
     if(isTargetTimeReached()){
           clearInterval(waitTimeInterval.value)
           isGameStart.value = true
+          pauseText.value = "⏸ Pause timer"
           loadLevel()
         }else{
           waitRemainSec.value = calcWaitSeconds()
@@ -232,16 +251,14 @@ const waitUntilTargetTime = () => {
   },1000)
 }
 
-// 初始化
-// loadLevel()
-//【改动4】初始化：不再直接loadLevel()，改为等待时间
 waitUntilTargetTime()
 
 onUnmounted(() => {
   clearInterval(timerInterval.value)
-  clearInterval(waitTimeInterval.value) //【改动5】销毁清除等待定时器
+  clearInterval(waitTimeInterval.value)
 })
 </script>
+
 
 <style scoped>
 .container {
@@ -286,9 +303,25 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
 }
+/* 游戏进行中大字体 */
 .count-text {
   font-size: 200rpx;
   font-weight: bold;
+}
+/* 开赛倒计时 拆分布局 */
+.count-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.count-title{
+  font-size:80rpx;
+  font-weight:bold;
+  margin-bottom:20rpx;
+}
+.count-num{
+  font-size:130rpx;
+  font-weight:bold;
 }
 
 .divider-bar {
@@ -379,3 +412,4 @@ onUnmounted(() => {
   font-weight:bold;
 }
 </style>
+
